@@ -1,0 +1,37 @@
+{
+  "leds": {
+    "bar": [13, 11, 9, 12, 10, 14, 15, 8],
+    "dot": "",
+    "G": "/sys/devices/platform/soc/984000.i2c/i2c-0/0-0020/leds/aw210xx_led",
+    "V": "",
+    "red_led": "",
+    "cam": ""
+  },
+  "animations": {
+    "notification": {
+      "pattern": "random",
+      "leds": ["all"],
+      "freqency": 10
+    },
+    "unread": {
+      "pattern": "on",
+      "leds": ["dot"],
+      "frequency": 0.3
+    },
+    "recording": {
+      "pattern": "blink",
+      "leds": ["red_led"],
+      "frequency": 0.5
+    },
+    "charging": {
+      "pattern": "fill",
+      "leds": ["bar"],
+      "frequency": 0.1
+    },
+    "wireless_charging": {
+      "pattern": "breath",
+      "leds": ["G"],
+      "frequency": 0.25
+    }
+  }
+}
