@@ -1,0 +1,15 @@
+{
+    "name": "glyphy.batcastle",
+    "description": "Control the Glyphs of your Nothing Phone(1) in a easy, user-friendly way!",
+    "architecture": "all",
+    "title": "Glyphy",
+    "hooks": {
+        "glyphy": {
+            "apparmor": "glyphy.apparmor",
+            "desktop":  "glyphy.desktop"
+        }
+    },
+    "version": "1.0.0",
+    "maintainer": "Thomas Castleman <batcastle@draugeros.org>",
+    "framework" : "$ENV{CLICK_FRAMEWORK}"
+}

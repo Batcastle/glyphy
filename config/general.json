@@ -1,0 +1,19 @@
+{
+  "leds": {
+    "bar": [
+      13,
+      11,
+      9,
+      12,
+      10,
+      14,
+      15,
+      8
+    ],
+    "dot": "",
+    "G": "/sys/devices/platform/soc/984000.i2c/i2c-0/0-0020/leds/aw210xx_led",
+    "V": "",
+    "red_led": "",
+    "cam": ""
+  }
+}
