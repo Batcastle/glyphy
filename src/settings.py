@@ -31,13 +31,16 @@ class Settings:
         """Setup settings class"""
         self.files = {}
         self.settings = {}
+        self.path = "../config"
 
-    def search(self, path="../config") -> dict:
+    def search(self, path=None) -> dict:
         """Check filesystem for available config files"""
+        if path is None:
+            path = self.path
         files = os.listdir(path)
         output = {}
         for each in files:
-            output[each] = {"name": each,
+            output[each] = {"name": f"{path}/{each}",
                            "type": None,
                            "children": {},
                            "size": os.stat(f"{path}/{each}")[6]}
@@ -46,12 +49,28 @@ class Settings:
             elif os.path.isdir(f"{path}/{each}"):
                 output[each]["type"] = "dir"
                 output[each]["children"] = self.search(path=f"{path}/{each}")
-        if path == "../config":
+        if path == self.path:
             self.files = output
         return output
 
-    def load(self):
+    def load(self, files_to_process=None):
         """Load settings to memory"""
+        if files_to_process is None:
+            files_to_process = self.files
+        output = {}
+        for each in files_to_process:
+            if files_to_process[each]["type"] == "file":
+                with open(files_to_process[each]["name"], "r") as file:
+                    try:
+                        output[files_to_process[each]["name"]] = json.load(file)
+                    except json.decoder.JSONDecodeError:
+                        print(f"JSON formatting error in file: {files_to_process[each]["name"]} ; not importing...")
+            elif files_to_process[each]["type"] == "dir":
+                output = output | self.load(files_to_process=files_to_process[each]["children"])
+        if files_to_process == self.files:
+            self.settings = output
+        return output
 
     def get(self, filename):
         """Get contents of settings file"""
+        return self.settings[filename]

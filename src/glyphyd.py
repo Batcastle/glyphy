@@ -27,6 +27,6 @@ import multiprocessing
 import settings
 
 
-config = settings.Settings()
-config.search()
-config.load()
+CONFIG = settings.Settings()
+CONFIG.search()
+CONFIG.load()
