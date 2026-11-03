@@ -23,10 +23,40 @@
 #
 """Daemon to control Glyph lights"""
 import time
+import json
 import multiprocessing
 import settings
+from led import LED
 
-
+print("THIS IS A TEST!")
+print("LOADING SETTINGS...")
 CONFIG = settings.Settings()
 CONFIG.search()
 CONFIG.load()
+GENERAL_SETTINGS = CONFIG.get("general.json")
+print("SETTINGS LOADED")
+
+print("SETTING UP LED OBJECTS...")
+LED_OBJS = {}
+for EACH in GENERAL_SETTINGS["leds"]:
+    if not isinstance(EACH, list):
+        LED_OBJS[EACH] = LED(f"{GENERAL_SETTINGS['general']['base']}/{GENERAL_SETTINGS['leds'][EACH]}", GENERAL_SETTINGS["general"]["max"], GENERAL_SETTINGS["general"]["min"])
+
+print("LED OBJECTS SETUP")
+
+print("TESTING...")
+OUTPUT = {}
+for EACH in LED_OBJS:
+    LED_OBJS[EACH].set(LED_OBJS[EACH].max)
+    result = input(f"Is the LED {EACH} turned on?: ").lower()
+    if result in ("y", "yes"):
+        OUTPUT[EACH] = True
+    else:
+        OUTPUT[EACH] = False
+    LED_OBJS[EACH].set(LED_OBJS[EACH].min)
+print("TESTING COMPLETE!")
+print("CURRENT LED STATUS:")
+print(json.dumps(OUTPUT, indent=2))
+
+
+

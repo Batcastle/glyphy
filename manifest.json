@@ -11,5 +11,5 @@
     },
     "version": "1.0.0",
     "maintainer": "Thomas Castleman <batcastle@draugeros.org>",
-    "framework" : "$ENV{CLICK_FRAMEWORK}"
+    "framework": "@CLICK_FRAMEWORK@"
 }

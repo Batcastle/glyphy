@@ -25,6 +25,7 @@
 import json
 import os
 
+
 class Settings:
     """Settings access class"""
     def __init__(self):
