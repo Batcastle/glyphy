@@ -25,6 +25,7 @@
 import time
 import json
 import multiprocessing
+import subprocess
 import settings
 from led import LED
 
@@ -33,7 +34,7 @@ print("LOADING SETTINGS...")
 CONFIG = settings.Settings()
 CONFIG.search()
 CONFIG.load()
-GENERAL_SETTINGS = CONFIG.get("general.json")
+GENERAL_SETTINGS = CONFIG.get("config/general.json")
 print("SETTINGS LOADED")
 
 print("SETTING UP LED OBJECTS...")
@@ -41,8 +42,10 @@ LED_OBJS = {}
 for EACH in GENERAL_SETTINGS["leds"]:
     if not isinstance(EACH, list):
         LED_OBJS[EACH] = LED(f"{GENERAL_SETTINGS['general']['base']}/{GENERAL_SETTINGS['leds'][EACH]}", GENERAL_SETTINGS["general"]["max"], GENERAL_SETTINGS["general"]["min"])
-
 print("LED OBJECTS SETUP")
+
+print("DISABLING GLYPH LIGHTS SERVICE")
+subprocess.check_call(["systemctl", "--user", "stop", "glyphs"])
 
 print("TESTING...")
 OUTPUT = {}
@@ -55,6 +58,8 @@ for EACH in LED_OBJS:
         OUTPUT[EACH] = False
     LED_OBJS[EACH].set(LED_OBJS[EACH].min)
 print("TESTING COMPLETE!")
+print("RE-STARTING GLYPH LIGHTS SERVICE")
+subprocess.check_call(["systemctl", "--user", "start", "glyphs"])
 print("CURRENT LED STATUS:")
 print(json.dumps(OUTPUT, indent=2))
 
