@@ -34,14 +34,14 @@ print("LOADING SETTINGS...")
 CONFIG = settings.Settings()
 CONFIG.search()
 CONFIG.load()
-GENERAL_SETTINGS = CONFIG.get("config/general.json")
+GENERAL_SETTINGS = CONFIG.get("../config/general.json")
 print("SETTINGS LOADED")
 
 print("SETTING UP LED OBJECTS...")
 LED_OBJS = {}
 for EACH in GENERAL_SETTINGS["leds"]:
-    if not isinstance(EACH, list):
-        LED_OBJS[EACH] = LED(f"{GENERAL_SETTINGS['general']['base']}/{GENERAL_SETTINGS['leds'][EACH]}", GENERAL_SETTINGS["general"]["max"], GENERAL_SETTINGS["general"]["min"])
+    if not isinstance(GENERAL_SETTINGS["leds"][EACH], list):
+        LED_OBJS[EACH] = LED(f"{GENERAL_SETTINGS['general']['base']}/{GENERAL_SETTINGS['leds'][EACH]}", GENERAL_SETTINGS["general"]["max_brightness"], GENERAL_SETTINGS["general"]["min_brightness"])
 print("LED OBJECTS SETUP")
 
 print("DISABLING GLYPH LIGHTS SERVICE")

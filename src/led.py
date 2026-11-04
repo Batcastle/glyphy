@@ -37,7 +37,7 @@ class LED:
             if self.get() != 0:
                 new = 0
             else:
-                new=brightness
+                new = brightness
             self.set(new)
 
         self.toggle = toggle
@@ -50,6 +50,6 @@ class LED:
     def set(self, brightness: int):
         """Set current LED state"""
         with open(self._led_file, "w") as file:
-            file.write(state)
+            file.write(str(brightness))
 
 
