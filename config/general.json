@@ -1,6 +1,6 @@
 {
   "general": {
-    "base": "/sys/devices/platform/soc/984000.i2c/i2c-0/0-0020/leds/aw210xx_led",
+    "base": "/sys/class/leds/aw210xx_led",
     "max_brightness": 4095,
     "min_brightness": 0,
     "all": ["bar", "dot", "G", "V", "cam"]

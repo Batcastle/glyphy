@@ -158,4 +158,4 @@ class Glyph(Array):
     def __init__(self, config):
         super(Glyph, self).__init__(config)
 
-        self.effects = [effect for effect in os.listdir() if "effect" in effect]
+        self.effects = [effect for effect in os.listdir(self.gen_config["base"]) if "effect" in effect]
