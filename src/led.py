@@ -143,7 +143,7 @@ class Array:
         return tuple(self.led_objs.keys())
 
 
-class Glyph(led.Array):
+class Glyph(Array):
     """Object representation for Nothing Phone 1 Glyph Lights"""
     def __init__(self, config):
         self.super(config)
