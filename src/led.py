@@ -146,6 +146,6 @@ class Array:
 class Glyph(Array):
     """Object representation for Nothing Phone 1 Glyph Lights"""
     def __init__(self, config):
-        self.super(config)
+        super(config)
 
         self.effects = [effect for effect in os.listdir() if "effect" in effect]
