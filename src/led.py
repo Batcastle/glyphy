@@ -26,7 +26,7 @@ import os
 
 class LED:
     """Class to represent individual LED states"""
-    def __init__(self, led_file: str, max: int, min: int):
+    def __init__(self, led_file: str, max: int, min: int, single_mode=False, single=None):
         """Initialize LED system"""
         self.absolute_max = max
         self.max = None
@@ -34,6 +34,8 @@ class LED:
         self._led_file = led_file
         self.toggle = None
         self.set_max_brightness(max)
+        self.single_mode = single_mode
+        self.single = single
 
     def set_max_brightness(self, new_max: int):
         """Set the max brightness of the LEDs to brightness can be scaled if necessary"""
@@ -75,8 +77,12 @@ class LED:
 
     def set(self, brightness: int):
         """Set current LED state"""
-        with open(self._led_file, "w") as file:
-            file.write(str(brightness))
+        if self.single_mode:
+            with open(self._led_file, "w") as file:
+                file.write(f"{self.single} {brightness}")
+        else:
+            with open(self._led_file, "w") as file:
+                file.write(str(brightness))
 
 
 class Array:
@@ -89,7 +95,11 @@ class Array:
 
         for each in self.led_config:
             if not isinstance(self.led_config[each], list):
-                self.led_objs[each] = LED(f"{self.gen_config['base']}/{self.led_config[each]}", self.gen_config["max_brightness"], self.gen_config["min_brightness"])
+                if isinstance(self.led_config[each], int):
+                    self.led_objs[each] = LED(f"{self.gen_config['base']}/{self.led_config["single"]}", self.gen_config["max_brightness"], self.gen_config["min_brightness"], single_mode=True, single=self.led_config[each])
+                else:
+                    if each != "single":
+                        self.led_objs[each] = LED(f"{self.gen_config['base']}/{self.led_config[each]}", self.gen_config["max_brightness"], self.gen_config["min_brightness"])
 
     def get_all(self) -> dict:
         """Get the state of all LEDS in the array, represented by a dictionary"""

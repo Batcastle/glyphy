@@ -19,7 +19,8 @@
     "dot": "dot_led_br",
     "G": "round_leds_br",
     "V": "front_cam_led_br",
-    "red_led": "single_led_br",
-    "cam": "rear_cam_led_br"
+    "red_led": 17,
+    "cam": "rear_cam_led_br",
+    "single": "single_led_br"
   }
 }
