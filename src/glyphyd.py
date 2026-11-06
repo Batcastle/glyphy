@@ -46,19 +46,23 @@ subprocess.check_call(["systemctl", "--user", "stop", "glyphs"])
 
 print("TESTING...")
 OUTPUT = {}
-for EACH in LED_OBJS:
-    LED_OBJS[EACH].set(LED_OBJS[EACH].max)
+for EACH in glyphs.list_leds():
+    glyphs.set_single_max(EACHs)
     result = input(f"Is the LED {EACH} turned on?: ").lower()
     if result in ("y", "yes"):
         OUTPUT[EACH] = True
     else:
         OUTPUT[EACH] = False
-    LED_OBJS[EACH].set(LED_OBJS[EACH].min)
+    glyphs.set_single_off(EACH)
 print("TESTING COMPLETE!")
 print("RE-STARTING GLYPH LIGHTS SERVICE")
 subprocess.check_call(["systemctl", "--user", "start", "glyphs"])
 print("CURRENT LED STATUS:")
 print(json.dumps(OUTPUT, indent=2))
+
+print("TESTING NEW GLYPH CLASS")
+glyphs = led.Glyph(config)
+print(f"Known effects: {glyphs.effects}")
 
 
 

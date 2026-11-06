@@ -105,6 +105,24 @@ class Array:
         """Set the brightness of a single LED in the array"""
         self.led_objs[name].set(brightness)
 
+    def set_single_max(self, name: str):
+        """Set the brightness of a single LED in the array to max"""
+        self.set_single(name, self.led_objs[name].max)
+
+    def set_single_off(self, name: str):
+        """Turn off a single LED in the array"""
+        self.set_single(name, 0)
+
+    def set_all_max(self):
+        """Set all LEDs to max brightness"""
+        # Because a different max brightness can be set for each LED, this needs to be done seperately from self.set_all()
+        for each in self.led_objs:
+            self.set_single(each, self.led_objs[each].max)
+
+    def set_all_off(self):
+        """Turn off all LEDs in the array"""
+        self.set_all(0)
+
     def set_all(self, brightness: int):
         """Set brightness for all LEDs in array"""
         for each in self.led_objs:
@@ -120,3 +138,14 @@ class Array:
         for each in self.led_objs:
             self.led_objs[each].reset_max_brightness()
 
+    def list_leds(self) -> tuple:
+        """Return a tuple of all valid LEDs"""
+        return tuple(self.led_objs.keys())
+
+
+class Glyph(led.Array):
+    """Object representation for Nothing Phone 1 Glyph Lights"""
+    def __init__(self, config):
+        self.super(config)
+
+        self.effects = [effect for effect in os.listdir() if "effect" in effect]
