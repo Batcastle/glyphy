@@ -28,9 +28,35 @@ class LED:
     """Class to represent individual LED states"""
     def __init__(self, led_file: str, max: int, min: int):
         """Initialize LED system"""
-        self.max = max
+        self.absolute_max = max
+        self.max = None
         self.min = min
         self._led_file = led_file
+        self.toggle = None
+        self.set_max_brightness(max)
+
+    def set_max_brightness(self, new_max: int):
+        """Set the max brightness of the LEDs to brightness can be scaled if necessary"""
+        if new_max > self.absolute_max:
+            self.max = self.absolute_max
+        elif new_max < 128:
+            self.max = 128
+        else:
+            self.max = new_max
+
+        def toggle(brightness=self.max):
+            """Toggle current LED state"""
+            if self.get() != 0:
+                new = 0
+            else:
+                new = brightness
+            self.set(new)
+
+        self.toggle = toggle
+
+    def reset_max_brightness(self):
+        """Set the max brightness of the LEDs to brightness can be scaled if necessary"""
+        self.max = self.absolute_max
 
         def toggle(brightness=self.max):
             """Toggle current LED state"""
@@ -52,4 +78,45 @@ class LED:
         with open(self._led_file, "w") as file:
             file.write(str(brightness))
 
+
+class Array:
+    """LED Array handler class"""
+    def __init__(self, config: dict):
+        """Set up LED array handler class"""
+        self.led_objs = {}
+        self.led_config = config["leds"]
+        self.gen_config = config["general"]
+
+        for each in self.led_config:
+            if not isinstance(self.led_config[each], list):
+                self.led_objs[each] = LED(f"{self.gen_config['base']}/{self.led_config[each]}", self.gen_config["max_brightness"], self.gen_config["min_brightness"])
+
+    def get_all(self) -> dict:
+        """Get the state of all LEDS in the array, represented by a dictionary"""
+        output = {}
+        for each in self.led_objs:
+            output[each] = self.get_single(each)
+
+    def get_single(self, name: str) -> int:
+        """Get the state of a single LED in the array"""
+        self.led_objs[name].get()
+
+    def set_single(self, name: str, brightness: int):
+        """Set the brightness of a single LED in the array"""
+        self.led_objs[name].set(brightness)
+
+    def set_all(self, brightness: int):
+        """Set brightness for all LEDs in array"""
+        for each in self.led_objs:
+            self.set_single(each, brightness)
+
+    def set_max_brightness(self, new_max: int):
+        """Set max brightness for array so that brightness can be scaled"""
+        for each in self.led_objs:
+            self.led_objs[each].set_max_brightness(new_max)
+
+    def reset_max_brightness(self):
+        """Set max brightness for array so that brightness can be scaled"""
+        for each in self.led_objs:
+            self.led_objs[each].reset_max_brightness()
 

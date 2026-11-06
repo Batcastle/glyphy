@@ -27,7 +27,7 @@ import json
 import multiprocessing
 import subprocess
 import settings
-from led import LED
+import led
 
 print("THIS IS A TEST!")
 print("LOADING SETTINGS...")
@@ -38,10 +38,7 @@ GENERAL_SETTINGS = CONFIG.get("../config/general.json")
 print("SETTINGS LOADED")
 
 print("SETTING UP LED OBJECTS...")
-LED_OBJS = {}
-for EACH in GENERAL_SETTINGS["leds"]:
-    if not isinstance(GENERAL_SETTINGS["leds"][EACH], list):
-        LED_OBJS[EACH] = LED(f"{GENERAL_SETTINGS['general']['base']}/{GENERAL_SETTINGS['leds'][EACH]}", GENERAL_SETTINGS["general"]["max_brightness"], GENERAL_SETTINGS["general"]["min_brightness"])
+glyphs = led.Array(GENERAL_SETTINGS)
 print("LED OBJECTS SETUP")
 
 print("DISABLING GLYPH LIGHTS SERVICE")
