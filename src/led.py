@@ -94,18 +94,34 @@ class Array:
         self.gen_config = config["general"]
 
         for each in self.led_config:
-            if not isinstance(self.led_config[each], list):
-                if isinstance(self.led_config[each], int):
-                    self.led_objs[each] = LED(f"{self.gen_config['base']}/{self.led_config["single"]}", self.gen_config["max_brightness"], self.gen_config["min_brightness"], single_mode=True, single=self.led_config[each])
-                else:
-                    if each != "single":
-                        self.led_objs[each] = LED(f"{self.gen_config['base']}/{self.led_config[each]}", self.gen_config["max_brightness"], self.gen_config["min_brightness"])
+            if isinstance(self.led_config[each], dict):
+                new_config = {"general": self.gen_config,
+                              "leds": self.led_config[each]}
+                self.led_config[each] = Array(new_config)
+            if isinstance(self.led_config[each], int):
+                self.led_objs[each] = LED(f"{self.gen_config['base']}/{self.led_config["single"]}",
+                                          self.gen_config["max_brightness"], self.gen_config["min_brightness"],
+                                          single_mode=True, single=self.led_config[each])
+            else:
+                if each != "single":
+                    self.led_objs[each] = LED(f"{self.gen_config['base']}/{self.led_config[each]}",
+                                              self.gen_config["max_brightness"], self.gen_config["min_brightness"])
+        self.max = config["general"]["max_brightness"]
+        self.min = config["general"]["min_brightness"]
 
     def get_all(self) -> dict:
         """Get the state of all LEDS in the array, represented by a dictionary"""
         output = {}
         for each in self.led_objs:
             output[each] = self.get_single(each)
+
+    def get(self) -> int:
+        """Compatability function to allow usage like LED(). Returns average of all brightnesses"""
+        all_leds = self.get_all()
+        avg = 0
+        for each in all_leds:
+            avg += all_leds[each]
+        return round(avg / len(all_leds))
 
     def get_single(self, name: str) -> int:
         """Get the state of a single LED in the array"""
@@ -137,6 +153,10 @@ class Array:
         """Set brightness for all LEDs in array"""
         for each in self.led_objs:
             self.set_single(each, brightness)
+
+    def set(self, brightness: int):
+        """Compatability function to set all LED brightnesses in array"""
+        self.set_all(brightness)
 
     def set_max_brightness(self, new_max: int):
         """Set max brightness for array so that brightness can be scaled"""
