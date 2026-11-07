@@ -97,6 +97,7 @@ class Array:
             if isinstance(self.led_config[each], dict):
                 new_config = {"general": self.gen_config,
                               "leds": self.led_config[each]}
+                new_config["leds"]["single"] = self.led_config["leds"]["single"]
                 self.led_config[each] = Array(new_config)
             if isinstance(self.led_config[each], int):
                 self.led_objs[each] = LED(f"{self.gen_config['base']}/{self.led_config["single"]}",
