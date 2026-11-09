@@ -28,55 +28,26 @@ import multiprocessing
 import subprocess
 import settings
 import led
+import tools
 
-print("THIS IS A TEST!")
-print("LOADING SETTINGS...")
+
 CONFIG = settings.Settings()
 CONFIG.search()
 CONFIG.load()
 GENERAL_SETTINGS = CONFIG.get("../config/general.json")
-print("SETTINGS LOADED")
-
-print("SETTING UP LED OBJECTS...")
+ANIMATION_SETTINGS = CONFIG.get("../config/animations.json")
 glyphs = led.Array(GENERAL_SETTINGS)
-print("LED OBJECTS SETUP")
-
-print("DISABLING GLYPH LIGHTS SERVICE")
+glyph_system = led.Glyph(GENERAL_SETTINGS)
 subprocess.check_call(["systemctl", "--user", "stop", "glyphs"])
+screen = tools.ScreenBrightnessFollower()
+length = 30
+finish = time.time() + length
+while time.time() <= finish:
+    brightness = screen.get()
+    brightness = brightness * glyphs.led_objs["G"].max
+    glyphs.set("G", brightness)
 
-print("TESTING...")
-OUTPUT = {}
-for EACH in glyphs.list_leds():
-    print(f"TESTING {EACH}...")
-    glyphs.set_single_max(EACH)
-    result = input(f"Is the LED {EACH} turned on?: ").lower()
-    if result in ("y", "yes"):
-        OUTPUT[EACH] = True
-    else:
-        OUTPUT[EACH] = False
-    glyphs.set_single_off(EACH)
-print("TESTING BAR SEGMENTATION...")
-print("Please watch bar for progress bar animation...")
-for each in glyphs.led_objs["bar"].led_objs:
-    glyphs.led_objs["bar"].led_objs[each].set(glyphs.led_objs["bar"].led_objs[each].max)
-    time.sleep(0.25)
-glyphs.led_objs["bar"].set(0)
-result = input("Did the progress bar animation play correctly?: ").lower()
-if result in ("y", "yes"):
-    OUTPUT["progress"] = True
-else:
-    OUTPUT["progress"] = False
 
-print("TESTING NEW GLYPH CLASS")
-glyphs = led.Glyph(GENERAL_SETTINGS)
-print(f"Known effects: {glyphs.effects}")
-glyphs.play_hardware_animation("random_leds_effect")
-while glyphs.playing_animations != {}:
-    glyphs.check_hardware_animations()
-    time.sleep(0.1)
-
-print("TESTING COMPLETE!")
-print("RE-STARTING GLYPH LIGHTS SERVICE")
 subprocess.check_call(["systemctl", "--user", "start", "glyphs"])
 print("CURRENT LED STATUS:")
 print(json.dumps(OUTPUT, indent=2))

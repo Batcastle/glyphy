@@ -3,7 +3,8 @@
     "base": "/sys/class/leds/aw210xx_led",
     "max_brightness": 4095,
     "min_brightness": 0,
-    "all": ["bar", "dot", "G", "V", "cam"]
+    "all": ["bar", "dot", "G", "V", "cam"],
+    "sync_brightness_with_screen": true
   },
   "leds": {
     "bar": {
