@@ -66,16 +66,16 @@ if result in ("y", "yes"):
     OUTPUT["progress"] = True
 else:
     OUTPUT["progress"] = False
-print("TESTING COMPLETE!")
-print("RE-STARTING GLYPH LIGHTS SERVICE")
-subprocess.check_call(["systemctl", "--user", "start", "glyphs"])
-print("CURRENT LED STATUS:")
-print(json.dumps(OUTPUT, indent=2))
 
 print("TESTING NEW GLYPH CLASS")
 glyphs = led.Glyph(GENERAL_SETTINGS)
 print(f"Known effects: {glyphs.effects}")
 glyphs.play_hardware_animation("random_leds_effect")
 
+print("TESTING COMPLETE!")
+print("RE-STARTING GLYPH LIGHTS SERVICE")
+subprocess.check_call(["systemctl", "--user", "start", "glyphs"])
+print("CURRENT LED STATUS:")
+print(json.dumps(OUTPUT, indent=2))
 
 
