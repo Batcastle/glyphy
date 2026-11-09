@@ -75,6 +75,7 @@ print(json.dumps(OUTPUT, indent=2))
 print("TESTING NEW GLYPH CLASS")
 glyphs = led.Glyph(GENERAL_SETTINGS)
 print(f"Known effects: {glyphs.effects}")
+glyphs.play_hardware_animation("random_leds_effect")
 
 
 

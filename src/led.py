@@ -181,3 +181,10 @@ class Glyph(Array):
         super(Glyph, self).__init__(config)
 
         self.effects = [effect for effect in os.listdir(self.gen_config["base"]) if "effect" in effect]
+
+    def play_hardware_animation(self, animation_name: str, duration=4000):
+        """Play a hardware-enabled animation, duration in milliseconds"""
+        with open(f"{self.gen_config['base']}/{animation_name}", "w") as file:
+            file.write(1)
+            time.sleep_ms(duration)
+            file.write(0)
