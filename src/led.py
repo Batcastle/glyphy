@@ -98,7 +98,7 @@ class Array:
                 new_config = {"general": self.gen_config,
                               "leds": self.led_config[each]}
                 new_config["leds"]["single"] = self.led_config["single"]
-                self.led_config[each] = Array(new_config)
+                self.led_objs[each] = Array(new_config)
             elif isinstance(self.led_config[each], int):
                 self.led_objs[each] = LED(f"{self.gen_config['base']}/{self.led_config["single"]}",
                                           self.gen_config["max_brightness"], self.gen_config["min_brightness"],
