@@ -23,6 +23,7 @@
 #
 """Represent individual LED states"""
 import os
+import time
 
 class LED:
     """Class to represent individual LED states"""
