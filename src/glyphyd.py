@@ -45,7 +45,7 @@ finish = time.time() + length
 while time.time() <= finish:
     brightness = screen.get()
     brightness = brightness * glyphs.led_objs["G"].max
-    glyphs.set("G", brightness)
+    glyphs.set_single("G", brightness)
 
 
 subprocess.check_call(["systemctl", "--user", "start", "glyphs"])
