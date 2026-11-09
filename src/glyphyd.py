@@ -55,6 +55,17 @@ for EACH in glyphs.list_leds():
     else:
         OUTPUT[EACH] = False
     glyphs.set_single_off(EACH)
+print("TESTING BAR SEGMENTATION...")
+print("Please watch bar for progress bar animation...")
+for each in glyphs.led_objs["bar"]:
+    glyphs.led_objs["bar"][each].set(glyphs.led_objs["bar"][each].max)
+    time.sleep(1)
+glyphs.led_objs["bar"].set_all_off()
+result = input("Did the progress bar animation play correctly?: ").lower()
+if result in ("y", "yes"):
+    OUTPUT["progress"] = True
+else:
+    OUTPUT["progress"] = False
 print("TESTING COMPLETE!")
 print("RE-STARTING GLYPH LIGHTS SERVICE")
 subprocess.check_call(["systemctl", "--user", "start", "glyphs"])
