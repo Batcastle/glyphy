@@ -209,10 +209,10 @@ class Glyph(Array):
 
     def check_hardware_animations(self):
         """Check all running hardware animations. If their cancel time is less than or equal to the current time, cancel the animation"""
-        delete = []
+        delete = set()
         for each in self.playing_animations:
             if self.playing_animations[each]["cancel_time"] <= time.time():
-                delete.append(each)
+                delete.add(self.playing_animations[each]["name"])
         for each in delete:
-            del self.playing_animations[each]
+            self.stop_hardware_animation(each)
 
