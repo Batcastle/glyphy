@@ -99,7 +99,7 @@ class Array:
                               "leds": self.led_config[each]}
                 new_config["leds"]["single"] = self.led_config["single"]
                 self.led_config[each] = Array(new_config)
-            if isinstance(self.led_config[each], int):
+            elif isinstance(self.led_config[each], int):
                 self.led_objs[each] = LED(f"{self.gen_config['base']}/{self.led_config["single"]}",
                                           self.gen_config["max_brightness"], self.gen_config["min_brightness"],
                                           single_mode=True, single=self.led_config[each])
@@ -115,6 +115,7 @@ class Array:
         output = {}
         for each in self.led_objs:
             output[each] = self.get_single(each)
+        return output
 
     def get(self) -> int:
         """Compatability function to allow usage like LED(). Returns average of all brightnesses"""
@@ -126,7 +127,7 @@ class Array:
 
     def get_single(self, name: str) -> int:
         """Get the state of a single LED in the array"""
-        self.led_objs[name].get()
+        return self.led_objs[name].get()
 
     def set_single(self, name: str, brightness: int):
         """Set the brightness of a single LED in the array"""

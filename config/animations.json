@@ -5,7 +5,7 @@
       "leds": [
         "all"
       ],
-      "freqency": 10
+      "frequency": 10
     },
     "unread": {
       "pattern": "on",
