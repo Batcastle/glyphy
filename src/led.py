@@ -187,14 +187,14 @@ class Glyph(Array):
 
     def play_hardware_animation(self, animation_name: str, duration=4000):
         """Play a hardware-enabled animation, duration in milliseconds"""
-        with open(f"{self.gen_config['base']}/{animation_name}", "w") as file:
-            file.write("1")
         length = duration / 1000
         cancel_time = time.time() + length
         new_animation = self.animation_key
         new_animation["cancel_time"] = cancel_time
         new_animation["name"] = animation_name
         self.playing_animations[time.time()] = new_animation
+        with open(f"{self.gen_config['base']}/{animation_name}", "w") as file:
+            file.write("1")
 
     def stop_hardware_animation(self, animation_name: str):
         """Stop a playing hardware-enabled animation"""
@@ -211,7 +211,7 @@ class Glyph(Array):
         """Check all running hardware animations. If their cancel time is less than or equal to the current time, cancel the animation"""
         delete = []
         for each in self.playing_animations:
-            if self.playing_animations[each]["cancel_time"] >= time.time():
+            if self.playing_animations[each]["cancel_time"] <= time.time():
                 delete.append(each)
         for each in delete:
             del self.playing_animations[each]
