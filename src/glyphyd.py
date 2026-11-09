@@ -57,10 +57,10 @@ for EACH in glyphs.list_leds():
     glyphs.set_single_off(EACH)
 print("TESTING BAR SEGMENTATION...")
 print("Please watch bar for progress bar animation...")
-for each in glyphs.led_objs["bar"]:
-    glyphs.led_objs["bar"][each].set(glyphs.led_objs["bar"][each].max)
+for each in glyphs.led_objs["bar"].led_objs:
+    glyphs.led_objs["bar"].led_objs[each].set(glyphs.led_objs["bar"].led_objs[each].max)
     time.sleep(1)
-glyphs.led_objs["bar"].set_all_off()
+glyphs.led_objs["bar"].set(0)
 result = input("Did the progress bar animation play correctly?: ").lower()
 if result in ("y", "yes"):
     OUTPUT["progress"] = True
