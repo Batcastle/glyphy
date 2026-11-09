@@ -71,6 +71,9 @@ print("TESTING NEW GLYPH CLASS")
 glyphs = led.Glyph(GENERAL_SETTINGS)
 print(f"Known effects: {glyphs.effects}")
 glyphs.play_hardware_animation("random_leds_effect")
+while glyphs.playing_animations != {}:
+    glyphs.check_hardware_animations()
+    time.sleep(0.1)
 
 print("TESTING COMPLETE!")
 print("RE-STARTING GLYPH LIGHTS SERVICE")

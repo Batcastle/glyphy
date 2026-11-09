@@ -180,14 +180,39 @@ class Glyph(Array):
     """Object representation for Nothing Phone 1 Glyph Lights"""
     def __init__(self, config):
         super(Glyph, self).__init__(config)
-
+        self.animation_key = {"name": None,
+                              "cancel_time": None}
         self.effects = [effect for effect in os.listdir(self.gen_config["base"]) if "effect" in effect]
+        self.playing_animations = {}
 
     def play_hardware_animation(self, animation_name: str, duration=4000):
         """Play a hardware-enabled animation, duration in milliseconds"""
-        length = duration / 1000
         with open(f"{self.gen_config['base']}/{animation_name}", "w") as file:
             file.write("1")
-        time.sleep(length)
+        length = duration / 1000
+        cancel_time = time.time() + length
+        new_animation = self.animation_key
+        new_animation["cancel_time"] = cancel_time
+        new_animation["name"] = animation_name
+        self.playing_animations[time.time()] = new_animation
+
+    def stop_hardware_animation(self, animation_name: str):
+        """Stop a playing hardware-enabled animation"""
         with open(f"{self.gen_config['base']}/{animation_name}", "w") as file:
             file.write("0")
+        delete = []
+        for each in self.playing_animations:
+            if self.playing_animations[each]["name"] == animation_name:
+                delete.append(each)
+        for each in delete:
+            del self.playing_animations[each]
+
+    def check_hardware_animations(self):
+        """Check all running hardware animations. If their cancel time is less than or equal to the current time, cancel the animation"""
+        delete = []
+        for each in self.playing_animations:
+            if self.playing_animations[each]["cancel_time"] >= time.time():
+                delete.append(each)
+        for each in delete:
+            del self.playing_animations[each]
+
