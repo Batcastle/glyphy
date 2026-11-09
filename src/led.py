@@ -188,5 +188,6 @@ class Glyph(Array):
         length = duration / 1000
         with open(f"{self.gen_config['base']}/{animation_name}", "w") as file:
             file.write("1")
-            time.sleep(length)
+        time.sleep(length)
+        with open(f"{self.gen_config['base']}/{animation_name}", "w") as file:
             file.write("0")
