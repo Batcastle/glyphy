@@ -47,6 +47,7 @@ subprocess.check_call(["systemctl", "--user", "stop", "glyphs"])
 print("TESTING...")
 OUTPUT = {}
 for EACH in glyphs.list_leds():
+    print(f"TESTING {EACH}...")
     glyphs.set_single_max(EACH)
     result = input(f"Is the LED {EACH} turned on?: ").lower()
     if result in ("y", "yes"):
