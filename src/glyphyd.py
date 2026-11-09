@@ -59,7 +59,7 @@ print("TESTING BAR SEGMENTATION...")
 print("Please watch bar for progress bar animation...")
 for each in glyphs.led_objs["bar"].led_objs:
     glyphs.led_objs["bar"].led_objs[each].set(glyphs.led_objs["bar"].led_objs[each].max)
-    time.sleep(1)
+    time.sleep(0.25)
 glyphs.led_objs["bar"].set(0)
 result = input("Did the progress bar animation play correctly?: ").lower()
 if result in ("y", "yes"):

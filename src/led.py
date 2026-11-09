@@ -185,7 +185,8 @@ class Glyph(Array):
 
     def play_hardware_animation(self, animation_name: str, duration=4000):
         """Play a hardware-enabled animation, duration in milliseconds"""
+        length = duration / 1000
         with open(f"{self.gen_config['base']}/{animation_name}", "w") as file:
             file.write("1")
-            time.sleep_ms(duration)
+            time.sleep_ms(length)
             file.write("0")
