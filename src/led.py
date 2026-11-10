@@ -253,8 +253,8 @@ class Glyph(Array):
         """
         delete = set()
         for each in self.playing_hardware_animations:
-            if self.playing_animations[each]["cancel_time"] <= time.time():
-                delete.add(self.playing_animations[each]["name"])
+            if self.playing_hardware_animations[each]["cancel_time"] <= time.time():
+                delete.add(self.playing_hardware_animations[each]["name"])
         for each in delete:
             self.stop_hardware_animation(each)
 
