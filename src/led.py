@@ -229,7 +229,7 @@ class Glyph(Array):
             duration = 9999999999
         length = duration / 1000
         cancel_time = time.time() + length
-        new_animation = self.animation_key
+        new_animation = dict(self.animation_key)
         new_animation["cancel_time"] = cancel_time
         new_animation["name"] = animation_name
         self.playing_hardware_animations[time.time()] = new_animation
@@ -285,7 +285,7 @@ class Glyph(Array):
             duration = 9999999999
         length = duration / 1000
         cancel_time = time.time() + length
-        new_animation = self.animation_key
+        new_animation = dict(self.animation_key)
         new_animation["cancel_time"] = cancel_time
         new_animation["animation_object"] = ani_obj
         new_id = tools.gen_id()
