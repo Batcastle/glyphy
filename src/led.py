@@ -202,9 +202,11 @@ class Glyph(Array):
     def __init__(self, config):
         super(Glyph, self).__init__(config)
         self.animation_key = {"name": None,
-                              "cancel_time": None}
+                              "cancel_time": None,
+                              "animation_object": None}
         self.effects = [effect for effect in os.listdir(self.gen_config["base"]) if "effect" in effect]
-        self.playing_animations = {}
+        self.playing_hardware_animations = {}
+        self.playing_software_animations = {}
 
     def play_hardware_animation(self, animation_name: str, duration=4000):
         """Play a hardware-enabled animation, duration in milliseconds"""
@@ -213,7 +215,7 @@ class Glyph(Array):
         new_animation = self.animation_key
         new_animation["cancel_time"] = cancel_time
         new_animation["name"] = animation_name
-        self.playing_animations[time.time()] = new_animation
+        self.playing_hardware_animations[time.time()] = new_animation
         with open(f"{self.gen_config['base']}/{animation_name}", "w") as file:
             file.write("1")
 
@@ -226,17 +228,55 @@ class Glyph(Array):
             if self.playing_animations[each]["name"] == animation_name:
                 delete.append(each)
         for each in delete:
-            del self.playing_animations[each]
+            del self.playing_hardware_animations[each]
 
     def check_status(self):
-        """Check all running hardware animations. If their cancel time is less than or equal to the current time, cancel the animation
+        """Check all running animations. If their cancel time is less than or equal to the current time, cancel the animation
         Check LED brightnesses and enforce that they are at or below their max brightness.
         """
         delete = set()
-        for each in self.playing_animations:
+        for each in self.playing_hardware_animations:
             if self.playing_animations[each]["cancel_time"] <= time.time():
                 delete.add(self.playing_animations[each]["name"])
         for each in delete:
             self.stop_hardware_animation(each)
+
+        delete = set()
+        for each in self.playing_software_animations:
+            if self.playing_software_animation[each]["cancel_time"] <= time.time():
+                delete.add(each)
+            else:
+                self.playing_software_animation[each]["animation_object"].tick()
+        for each in delete:
+            self.stop_software_animation(each)
         tools.enforce_brightness(self.led_objs)
+
+    def play_software_animation(self, settings_obj, animation, leds="all", reason=None, duration=4000) -> str:
+        """calls start() on the passed animation object. Assumes all LEDs by default. Returns a unique animation ID."""
+        ani_obj = animation()
+        ani_leds = {}
+        if leds in ("all", ("all"), ["all"]):
+            leds = self.gen_config["all"]
+        if isinstance(leds, str):
+            leds = [leds]
+        for each in leds:
+            ani_obj.add_led(each, self.led_objs[each])
+        if reason is not None:
+            # Later, we will add the ability to add a reason, so different things like notifications or alarms can play the same animation, but load different settings so they are distinct
+            pass
+        length = duration / 1000
+        cancel_time = time.time() + length
+        new_animation = self.animation_key
+        new_animation["cancel_time"] = cancel_time
+        new_animation["animation_object"] = ani_obj
+        new_id = tools.gen_id()
+        self.playing_software_animations[new_id] = new_animation
+        self.playing_software_animations[new_id]["animation_object"].start()
+        return new_id
+
+
+    def stop_software_animation(self, animation_id: str):
+        """Stops a given software animation, indicated by the animation ID, by calling the stop() method on it."""
+        self.playing_software_animations[animation_id].stop()
+        del self.playing_software_animations[animation_id]
 

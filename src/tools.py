@@ -99,3 +99,72 @@ def enforce_brightness(led_objs: dict):
     for each in led_objs:
         if led_objs[each].get() > led_objs[each].max:
             led_objs[each].set(led_objs[each].max)
+
+
+class NotificationWatcher:
+    """Detect notifications arriving in the drawer between polls."""
+
+    def __init__(self):
+        self.bus = Gio.bus_get_sync(Gio.BusType.SESSION, None)
+        self._messages = None
+        self._sources = None
+
+    def _snapshot(self):
+        try:
+            result = self.bus.call_sync(
+                "org.ayatana.indicator.messages", "/org/ayatana/indicator/messages",
+                "org.gtk.Actions", "DescribeAll", None,
+                GLib.VariantType("(a{s(bgav)})"), Gio.DBusCallFlags.NONE, 1000, None)
+        except GLib.Error:
+            return None  # indicator not reachable
+        messages = set()
+        sources = {}
+        for name, (_enabled, _param_type, state) in result.unpack()[0].items():
+            if ".msg." in name:
+                messages.add(name)
+            elif ".src." in name and state:
+                count, time, _string, _attention = state[0]
+                sources[name] = (count, time)
+        return messages, sources
+
+    def new_notification(self) -> bool:
+        """True if a notification arrived since the last call. The first call only sets a baseline."""
+        snap = self._snapshot()
+        if snap is None:
+            return False
+        messages, sources = snap
+        if self._messages is None:
+            self._messages, self._sources = messages, sources
+            return False
+
+        arrived = bool(messages - self._messages)
+        for name, (count, time) in sources.items():
+            old_count, old_time = self._sources.get(name, (0, 0))
+            if count > old_count or time > old_time:
+                arrived = True
+
+        self._messages, self._sources = messages, sources
+        return arrived
+
+
+def gen_id(length=8) -> str:
+    """Generate a unique ID for each connected device that follows these rules:
+    - Arbitrary length
+    - The remaining characters should be a randomly generated string of uppercase letters and numbers
+    - Avoid Letters:
+        - O, I
+    - Avoid numnbers:
+        - 0, 1
+    - Have no special characters"""
+    allowed_letters = ["A", "B", "C", "D", "E", "F", "G", "H", "J", "K", "L", "M", "N", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]
+    allowed_numbers = [2, 3, 4, 5, 6, 7, 8, 9]
+    suffix = []
+    while length > 0:
+        if (random.randint(0, 10) % 2) == 0:
+            # letter
+            suffix.append(random.choice(allowed_letters))
+        else:
+            # number
+            suffix.append(str(random.choice(allowed_numbers)))
+        length -= 1
+    return "".join(suffix)

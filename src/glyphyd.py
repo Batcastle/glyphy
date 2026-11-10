@@ -36,11 +36,11 @@ CONFIG.search()
 CONFIG.load()
 GENERAL_SETTINGS = CONFIG.get("../config/general.json")
 ANIMATION_SETTINGS = CONFIG.get("../config/animations.json")
-glyphs = led.Array(GENERAL_SETTINGS)
-glyph_system = led.Glyph(GENERAL_SETTINGS)
+glyphs = led.Glyph(GENERAL_SETTINGS)
 subprocess.check_call(["systemctl", "--user", "stop", "glyphs"])
 screen = tools.ScreenBrightnessFollower()
-length = 30
+notifications = tools.NotificationWatcher()
+length = 60
 finish = time.time() + length
 while time.time() <= finish:
     brightness = screen.get()
@@ -48,6 +48,7 @@ while time.time() <= finish:
     glyphs.set_single("G", brightness)
 
 
+glyphs.set_all_off()
 subprocess.check_call(["systemctl", "--user", "start", "glyphs"])
 
 
