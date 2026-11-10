@@ -24,6 +24,9 @@
 """Represent individual LED states"""
 import os
 import time
+import animations
+import tools
+
 
 class LED:
     """Class to represent individual LED states"""
@@ -32,13 +35,14 @@ class LED:
         self.absolute_max = max
         self.max = None
         self.min = min
+        self.brightness = 0
         self._led_file = led_file
         self.toggle = None
         self.set_max_brightness(max)
         self.single_mode = single_mode
         self.single = single
 
-    def set_max_brightness(self, new_max: int):
+    def change_max_brightness(self, new_max: int):
         """Set the max brightness of the LEDs to brightness can be scaled if necessary"""
         if new_max > self.absolute_max:
             self.max = self.absolute_max
@@ -54,6 +58,7 @@ class LED:
             else:
                 new = brightness
             self.set(new)
+            self.brightness = new
 
         self.toggle = toggle
 
@@ -68,13 +73,17 @@ class LED:
             else:
                 new = brightness
             self.set(new)
+            self.brightness = new
 
         self.toggle = toggle
 
     def get(self) -> int:
         """Get current LED state"""
-        with open(self._led_file, "r") as file:
-            return int(file.read())
+        if not self.single_mode:
+            with open(self._led_file, "r") as file:
+                return int(file.read())
+        else:
+            return self.brightness
 
     def set(self, brightness: int):
         """Set current LED state"""
@@ -84,6 +93,15 @@ class LED:
         else:
             with open(self._led_file, "w") as file:
                 file.write(str(brightness))
+        self.brightness = brightness
+
+    def set_max_brightness(self):
+        """Set LED to max brightness"""
+        self.set(self.max)
+
+    def set_off(self):
+        """Turn LED off"""
+        self.set(0)
 
 
 class Array:
@@ -110,6 +128,7 @@ class Array:
                                               self.gen_config["max_brightness"], self.gen_config["min_brightness"])
         self.max = config["general"]["max_brightness"]
         self.min = config["general"]["min_brightness"]
+        self.absolute_max = config["general"]["max_brightness"]
 
     def get_all(self) -> dict:
         """Get the state of all LEDS in the array, represented by a dictionary"""
@@ -165,11 +184,13 @@ class Array:
         """Set max brightness for array so that brightness can be scaled"""
         for each in self.led_objs:
             self.led_objs[each].set_max_brightness(new_max)
+        self.max = new_max
 
     def reset_max_brightness(self):
         """Set max brightness for array so that brightness can be scaled"""
         for each in self.led_objs:
             self.led_objs[each].reset_max_brightness()
+        self.max = self.absolute_max
 
     def list_leds(self) -> tuple:
         """Return a tuple of all valid LEDs"""
@@ -207,12 +228,15 @@ class Glyph(Array):
         for each in delete:
             del self.playing_animations[each]
 
-    def check_hardware_animations(self):
-        """Check all running hardware animations. If their cancel time is less than or equal to the current time, cancel the animation"""
+    def check_status(self):
+        """Check all running hardware animations. If their cancel time is less than or equal to the current time, cancel the animation
+        Check LED brightnesses and enforce that they are at or below their max brightness.
+        """
         delete = set()
         for each in self.playing_animations:
             if self.playing_animations[each]["cancel_time"] <= time.time():
                 delete.add(self.playing_animations[each]["name"])
         for each in delete:
             self.stop_hardware_animation(each)
+        tools.enforce_brightness(self.led_objs)
 

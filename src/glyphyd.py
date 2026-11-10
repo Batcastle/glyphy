@@ -49,7 +49,5 @@ while time.time() <= finish:
 
 
 subprocess.check_call(["systemctl", "--user", "start", "glyphs"])
-print("CURRENT LED STATUS:")
-print(json.dumps(OUTPUT, indent=2))
 
 

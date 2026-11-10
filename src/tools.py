@@ -92,3 +92,10 @@ def has_notifications() -> bool:
         return False  # indicator not running or not reachable
     enabled, _param_type, _state = result.unpack()[0]
     return enabled
+
+
+def enforce_brightness(led_objs: dict):
+    """Ensure all LEDs are at or below their current max brightness"""
+    for each in led_objs:
+        if led_objs[each].get() > led_objs[each].max:
+            led_objs[each].set(led_objs[each].max)
