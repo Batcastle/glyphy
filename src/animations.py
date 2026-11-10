@@ -129,5 +129,9 @@ def init() -> dict:
         def __init__(self):
             raise NotImplementedError()
 
+    class Cycle(_Animate):
+        def __init__(self):
+            raise NotImplementedError()
+
     return {"On": On,
             "Blink": Blink}

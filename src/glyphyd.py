@@ -42,7 +42,6 @@ screen = tools.ScreenBrightnessFollower()
 notifications = tools.NotificationWatcher()
 length = 60
 finish = time.time() + length
-glyphs.play_software_animation(CONFIG, animations.Blink, leds=["cam", "V", "bar"])
 unread_id = None
 while time.time() <= finish:
     glyphs.check_status()
