@@ -63,7 +63,7 @@ class Animate:
     def remove_all_leds(self):
         """Remove ALL LED files"""
         if not self.started:
-            keys = self._led_objs.keys():
+            keys = self._led_objs.keys()
             for each in keys:
                 del self._led_objs[each]
         else:
