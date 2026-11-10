@@ -8,7 +8,7 @@
       "duration": 2000
     },
     "unread": {
-      "pattern": "blink",
+      "pattern": "Blink",
       "hardware": false,
       "leds": [
         "dot"
@@ -17,7 +17,7 @@
       "duration": -1
     },
     "recording": {
-      "pattern": "blink",
+      "pattern": "Blink",
       "hardware": false,
       "leds": [
         "red_led"
@@ -26,7 +26,7 @@
       "duration": -1
     },
     "charging": {
-      "pattern": "fill",
+      "pattern": "Fill",
       "hardware": false,
       "leds": [
         "bar"
@@ -35,7 +35,7 @@
       "duration": -1
     },
     "wireless_charging": {
-      "pattern": "breath",
+      "pattern": "Breath",
       "hardware": false,
       "leds": [
         "G"

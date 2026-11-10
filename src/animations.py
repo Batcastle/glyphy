@@ -125,7 +125,7 @@ def init() -> dict:
             raise NotImplementedError()
 
 
-    class Fill(On):
+    class Fill(_Animate):
         def __init__(self):
             raise NotImplementedError()
 
@@ -133,5 +133,5 @@ def init() -> dict:
         def __init__(self):
             raise NotImplementedError()
 
-    return {"On": On,
-            "Blink": Blink}
+    return {"on": On,
+            "blink": Blink}

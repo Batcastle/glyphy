@@ -310,6 +310,8 @@ class Glyph(Array):
         # If hardware is not defined we can infer it from the name. This is not recommended, but we can infer this thanks to how we discover hardware effects
         if "hardware" not in settings:
             settings["hardware"] = (settings["pattern"][-7:] == "_effect")
+        # Animation names are case-insensitive
+        settings["pattern"] = settings["pattern"].lower()
         if settings["hardware"]:
             # Hardware-based animations
             self.play_hardware_animation(settings["pattern"], duration=setting["duration"])
