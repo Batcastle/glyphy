@@ -200,6 +200,11 @@ class Array:
         """Return a tuple of all valid LEDs"""
         return tuple(self.led_objs.keys())
 
+    def toggle(self):
+        """Toggle all LEDs"""
+        for each in self.led_objs:
+            self.led_objs[each].toggle()
+
 
 class Glyph(Array):
     """Object representation for Nothing Phone 1 Glyph Lights"""
