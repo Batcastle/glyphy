@@ -314,11 +314,11 @@ class Glyph(Array):
         settings["pattern"] = settings["pattern"].lower()
         if settings["hardware"]:
             # Hardware-based animations
-            self.play_hardware_animation(settings["pattern"], duration=setting["duration"])
+            self.play_hardware_animation(settings["pattern"], duration=settings["duration"])
         else:
             # Software-based animations
             to_play = self.software_animations[settings["pattern"]]
-            return self.play_software_animation(to_play, leds=settings["leds"], duration=setting["duration"])
+            return self.play_software_animation(to_play, leds=settings["leds"], duration=settings["duration"])
 
 
 
