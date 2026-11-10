@@ -45,10 +45,14 @@ length = 60
 finish = time.time() + length
 glyphs.play_software_animation(CONFIG, animations.Blink, leds=["cam", "V", "bar"])
 while time.time() <= finish:
+    glyphs.check_status()
+
     if notifications.new_notification():
         glyphs.play_hardware_animation("random_leds_effect", duration=500)
     if tools.has_notifications():
         glyphs.play_software_animation(CONFIG, animations.Blink, leds=["dot"], duration=-1)
+
+    glyphs.check_status()
 
 
 
