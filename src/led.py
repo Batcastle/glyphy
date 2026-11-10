@@ -38,7 +38,7 @@ class LED:
         self.brightness = 0
         self._led_file = led_file
         self.toggle = None
-        self.set_max_brightness(max)
+        self.change_max_brightness(max)
         self.single_mode = single_mode
         self.single = single
 
