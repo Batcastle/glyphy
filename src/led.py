@@ -292,6 +292,6 @@ class Glyph(Array):
 
     def stop_software_animation(self, animation_id: str):
         """Stops a given software animation, indicated by the animation ID, by calling the stop() method on it."""
-        self.playing_software_animations[animation_id].stop()
+        self.playing_software_animations[animation_id]["animation_object"].stop()
         del self.playing_software_animations[animation_id]
 
