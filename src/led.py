@@ -167,6 +167,10 @@ class Array:
         for each in self.led_objs:
             self.set_single(each, self.led_objs[each].max)
 
+    def set_max_brightness(self):
+        """Alias to set_all_max()"""
+        self.set_all_max()
+
     def set_all_off(self):
         """Turn off all LEDs in the array"""
         self.set_all(0)
@@ -180,10 +184,10 @@ class Array:
         """Compatability function to set all LED brightnesses in array"""
         self.set_all(brightness)
 
-    def set_max_brightness(self, new_max: int):
+    def change_max_brightness(self, new_max: int):
         """Set max brightness for array so that brightness can be scaled"""
         for each in self.led_objs:
-            self.led_objs[each].set_max_brightness(new_max)
+            self.led_objs[each].change_max_brightness(new_max)
         self.max = new_max
 
     def reset_max_brightness(self):
@@ -204,12 +208,16 @@ class Glyph(Array):
         self.animation_key = {"name": None,
                               "cancel_time": None,
                               "animation_object": None}
-        self.effects = [effect for effect in os.listdir(self.gen_config["base"]) if "effect" in effect]
+        self.hardware_effects = [effect for effect in os.listdir(self.gen_config["base"]) if "effect" in effect]
         self.playing_hardware_animations = {}
         self.playing_software_animations = {}
 
     def play_hardware_animation(self, animation_name: str, duration=4000):
         """Play a hardware-enabled animation, duration in milliseconds"""
+        if animation_name not in self.hardware_effects:
+            raise NameError(f"Could not find effect `{animation_name}'. Try `Glyph().hardware_effects' to see available effects on your platform.")
+        if duration in (-1, None):
+            duration = 9999999999
         length = duration / 1000
         cancel_time = time.time() + length
         new_animation = self.animation_key
@@ -264,6 +272,8 @@ class Glyph(Array):
         if reason is not None:
             # Later, we will add the ability to add a reason, so different things like notifications or alarms can play the same animation, but load different settings so they are distinct
             pass
+        if duration in (-1, None):
+            duration = 9999999999
         length = duration / 1000
         cancel_time = time.time() + length
         new_animation = self.animation_key

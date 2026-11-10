@@ -29,6 +29,7 @@ import subprocess
 import settings
 import led
 import tools
+import animations
 
 
 CONFIG = settings.Settings()
@@ -42,10 +43,13 @@ screen = tools.ScreenBrightnessFollower()
 notifications = tools.NotificationWatcher()
 length = 60
 finish = time.time() + length
+glyphs.play_software_animation(CONFIG, animations.Blink, leds=["cam", "V", "bar"])
 while time.time() <= finish:
-    brightness = screen.get()
-    brightness = brightness * glyphs.led_objs["G"].max
-    glyphs.set_single("G", brightness)
+    if notifications.new_notification():
+        glyphs.play_hardware_animation("random_leds_effect", duration=500)
+    if tools.has_notifications():
+        glyphs.play_software_animation(CONFIG, animations.Blink, leds=["dot"], duration=-1)
+
 
 
 glyphs.set_all_off()
