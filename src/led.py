@@ -251,10 +251,10 @@ class Glyph(Array):
 
         delete = set()
         for each in self.playing_software_animations:
-            if self.playing_software_animation[each]["cancel_time"] <= time.time():
+            if self.playing_software_animations[each]["cancel_time"] <= time.time():
                 delete.add(each)
             else:
-                self.playing_software_animation[each]["animation_object"].tick()
+                self.playing_software_animations[each]["animation_object"].tick()
         for each in delete:
             self.stop_software_animation(each)
         tools.enforce_brightness(self.led_objs)
