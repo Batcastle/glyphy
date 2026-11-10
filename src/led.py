@@ -241,8 +241,8 @@ class Glyph(Array):
         with open(f"{self.gen_config['base']}/{animation_name}", "w") as file:
             file.write("0")
         delete = []
-        for each in self.playing_animations:
-            if self.playing_animations[each]["name"] == animation_name:
+        for each in self.playing_hardware_animations:
+            if self.playing_hardware_animations[each]["name"] == animation_name:
                 delete.append(each)
         for each in delete:
             del self.playing_hardware_animations[each]
@@ -293,9 +293,12 @@ class Glyph(Array):
         self.playing_software_animations[new_id]["animation_object"].start()
         return new_id
 
-
     def stop_software_animation(self, animation_id: str):
         """Stops a given software animation, indicated by the animation ID, by calling the stop() method on it."""
         self.playing_software_animations[animation_id]["animation_object"].stop()
         del self.playing_software_animations[animation_id]
+
+    def list_playing_animations(self):
+        """List all playing animations"""
+        return {"hardware": self.playing_hardware_animations.keys(), "software": self.playing_software_animations.keys()}
 

@@ -44,13 +44,19 @@ notifications = tools.NotificationWatcher()
 length = 60
 finish = time.time() + length
 glyphs.play_software_animation(CONFIG, animations.Blink, leds=["cam", "V", "bar"])
+unread_id = None
 while time.time() <= finish:
     glyphs.check_status()
 
     if notifications.new_notification():
         glyphs.play_hardware_animation("random_leds_effect", duration=500)
     if tools.has_notifications():
-        glyphs.play_software_animation(CONFIG, animations.Blink, leds=["dot"], duration=-1)
+        if unread_id is None:
+            unread_id = glyphs.play_software_animation(CONFIG, animations.Blink, leds=["dot"], duration=-1)
+    elif unread_id is not None:
+        glyphs.stop_software_animation(unread_id)
+        unread_id = None
+
 
     glyphs.check_status()
 
