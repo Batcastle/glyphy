@@ -217,14 +217,15 @@ class Glyph(Array):
         self.animation_key = {"name": None,
                               "cancel_time": None,
                               "animation_object": None}
-        self.hardware_effects = [effect for effect in os.listdir(self.gen_config["base"]) if "effect" in effect]
+        self.hardware_animations = [effect for effect in os.listdir(self.gen_config["base"]) if "effect" in effect]
         self.playing_hardware_animations = {}
         self.playing_software_animations = {}
+        self.software_animations = animations.init()
 
     def play_hardware_animation(self, animation_name: str, duration=4000):
         """Play a hardware-enabled animation, duration in milliseconds"""
-        if animation_name not in self.hardware_effects:
-            raise NameError(f"Could not find effect `{animation_name}'. Try `Glyph().hardware_effects' to see available effects on your platform.")
+        if animation_name not in self.hardware_animations:
+            raise NameError(f"Could not find effect `{animation_name}'. Try `Glyph().hardware_animations' to see available effects on your platform.")
         if duration in (-1, None):
             duration = 9999999999
         length = duration / 1000
@@ -268,7 +269,7 @@ class Glyph(Array):
             self.stop_software_animation(each)
         tools.enforce_brightness(self.led_objs)
 
-    def play_software_animation(self, settings_obj, animation, leds="all", reason=None, duration=4000) -> str:
+    def play_software_animation(self, animation, leds="all", duration=4000) -> str:
         """calls start() on the passed animation object. Assumes all LEDs by default. Returns a unique animation ID."""
         ani_obj = animation()
         ani_leds = {}
@@ -278,9 +279,6 @@ class Glyph(Array):
             leds = [leds]
         for each in leds:
             ani_obj.add_led(each, self.led_objs[each])
-        if reason is not None:
-            # Later, we will add the ability to add a reason, so different things like notifications or alarms can play the same animation, but load different settings so they are distinct
-            pass
         if duration in (-1, None):
             duration = 9999999999
         length = duration / 1000
@@ -301,4 +299,27 @@ class Glyph(Array):
     def list_playing_animations(self):
         """List all playing animations"""
         return {"hardware": self.playing_hardware_animations.keys(), "software": self.playing_software_animations.keys()}
+
+    def play_animation(self, settings_obj, reason=None):
+        """Play animation for a given reason. If reason is none, notification is assumed."""
+        if reason is None:
+            reason = "notification"
+        reason = reason.lower()
+        animations = settings_obj.get("../config/animations.json")["animations"]
+        settings = animations[reason]
+        # If hardware is not defined we can infer it from the name. This is not recommended, but we can infer this thanks to how we discover hardware effects
+        if "hardware" not in settings:
+            settings["hardware"] = (settings["pattern"][-7:] == "_effect")
+        if settings["hardware"]:
+            # Hardware-based animations
+            self.play_hardware_animation(settings["pattern"], duration=setting["duration"])
+        else:
+            # Software-based animations
+            to_play = self.software_animations[settings["pattern"]]
+            return self.play_software_animation(to_play, leds=settings["leds"], duration=setting["duration"])
+
+
+
+
+
 

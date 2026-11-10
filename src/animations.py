@@ -25,7 +25,7 @@ import time
 import os
 
 
-class Animate:
+class _Animate:
     """Define Standard ABI for Animations
 
     THIS CLASS IS SIMPLY THE STANDARD ALL SOFTWARE ANIMATIONS FOLLOW! DO NOT USE AS ANIMATION!
@@ -70,51 +70,64 @@ class Animate:
             raise RuntimeError("Cannot edit LED list while animation is running. Stop animation with the stop() method first.")
 
 
+def init() -> dict:
+    """Initialize software animation classes and return a dictionary containing uninitialized animation objects"""
+    class On(_Animate):
+        """Simple animation, turns LED on"""
 
-class On(Animate):
-    """Simple animation, turns LED on"""
-
-    def start(self, frequency=None):
-        """Turn on indicated LEDs"""
-        super(On, self).start(frequency)
-        for each in self._led_objs:
-            self._led_objs[each].set_max_brightness()
-
-    def stop(self):
-        """Turn off indicated LEDs"""
-        super(On, self).stop()
-        for each in self._led_objs:
-            self._led_objs[each].set_off()
-
-    def tick(self):
-        """Do one tick of the animation"""
-        pass
-
-
-class Blink(On):
-    """Simple animation to blink LEDs"""
-    def __init__(self):
-        super(Blink, self).__init__()
-        self.last_change = -1
-        self.delay = -1
-
-    def start(self, frequency=1):
-        """Start blinking at set frequency"""
-        # Compute delay between blinks
-        self.delay = frequency / 2
-        super(Blink, self).start()
-        self.last_change = time.time()
-
-    def tick(self):
-        """Do one tick of the animation"""
-        if time.time() >= (self.last_change + self.delay):
+        def start(self, frequency=None):
+            """Turn on indicated LEDs"""
+            super(On, self).start(frequency)
             for each in self._led_objs:
-                self._led_objs[each].toggle()
+                self._led_objs[each].set_max_brightness()
+
+        def stop(self):
+            """Turn off indicated LEDs"""
+            super(On, self).stop()
+            for each in self._led_objs:
+                self._led_objs[each].set_off()
+
+        def tick(self):
+            """Do one tick of the animation"""
+            pass
+
+
+    class Blink(On):
+        """Simple animation to blink LEDs"""
+        def __init__(self):
+            super(Blink, self).__init__()
+            self.last_change = -1
+            self.delay = -1
+
+        def start(self, frequency=1):
+            """Start blinking at set frequency"""
+            # Compute delay between blinks
+            self.delay = frequency / 2
+            super(Blink, self).start()
             self.last_change = time.time()
 
-    def stop(self):
-        """Stop blinking"""
-        super(Blink, self).stop()
-        self.last_change = -1
-        self.delay = -1
+        def tick(self):
+            """Do one tick of the animation"""
+            if time.time() >= (self.last_change + self.delay):
+                for each in self._led_objs:
+                    self._led_objs[each].toggle()
+                self.last_change = time.time()
 
+        def stop(self):
+            """Stop blinking"""
+            super(Blink, self).stop()
+            self.last_change = -1
+            self.delay = -1
+
+
+    class Breath(On):
+        def __init__(self):
+            raise NotImplementedError()
+
+
+    class Fill(On):
+        def __init__(self):
+            raise NotImplementedError()
+
+    return {"On": On,
+            "Blink": Blink}

@@ -36,7 +36,6 @@ CONFIG = settings.Settings()
 CONFIG.search()
 CONFIG.load()
 GENERAL_SETTINGS = CONFIG.get("../config/general.json")
-ANIMATION_SETTINGS = CONFIG.get("../config/animations.json")
 glyphs = led.Glyph(GENERAL_SETTINGS)
 subprocess.check_call(["systemctl", "--user", "stop", "glyphs"])
 screen = tools.ScreenBrightnessFollower()
@@ -49,10 +48,10 @@ while time.time() <= finish:
     glyphs.check_status()
 
     if notifications.new_notification():
-        glyphs.play_hardware_animation("random_leds_effect", duration=500)
+        glyphs.play_animation(CONFIG, reason="notification")
     if tools.has_notifications():
         if unread_id is None:
-            unread_id = glyphs.play_software_animation(CONFIG, animations.Blink, leds=["dot"], duration=-1)
+            unread_id = glyphs.play_animation(CONFIG, reason="unread")
     elif unread_id is not None:
         glyphs.stop_software_animation(unread_id)
         unread_id = None

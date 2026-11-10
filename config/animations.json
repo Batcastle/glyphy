@@ -4,15 +4,17 @@
       "pattern": "random_leds_effect",
       "leds": [],
       "hardware": true,
-      "frequency": null
+      "frequency": null,
+      "duration": 2000
     },
     "unread": {
-      "pattern": "on",
+      "pattern": "blink",
       "hardware": false,
       "leds": [
         "dot"
       ],
-      "frequency": null
+      "frequency": null,
+      "duration": -1
     },
     "recording": {
       "pattern": "blink",
@@ -20,7 +22,8 @@
       "leds": [
         "red_led"
       ],
-      "frequency": 0.5
+      "frequency": 0.5,
+      "duration": -1
     },
     "charging": {
       "pattern": "fill",
@@ -28,7 +31,8 @@
       "leds": [
         "bar"
       ],
-      "frequency": 0.1
+      "frequency": 0.1,
+      "duration": -1
     },
     "wireless_charging": {
       "pattern": "breath",
@@ -36,7 +40,8 @@
       "leds": [
         "G"
       ],
-      "frequency": 0.25
+      "frequency": 0.25,
+      "duration": -1
     }
   }
 }
