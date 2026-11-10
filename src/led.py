@@ -175,6 +175,10 @@ class Array:
         """Turn off all LEDs in the array"""
         self.set_all(0)
 
+    def set_off(self):
+        """Alias to set_all_off()"""
+        self.set_all_off()
+
     def set_all(self, brightness: int):
         """Set brightness for all LEDs in array"""
         for each in self.led_objs:
