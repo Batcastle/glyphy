@@ -23,8 +23,10 @@
 #
 import random
 from gi.repository import Gio, GLib
+import os
 
 
+VIDEO_EXTENSIONS = (".mp4", ".m4v", ".mkv", ".webm", ".mov", ".3gp", ".avi", ".ts")
 POWER_SUPPLY = "/sys/class/power_supply"
 
 
@@ -205,3 +207,32 @@ def is_charging(wired_only=False) -> bool:
     if _online("usb"):
         return True
     return False if wired_only else is_wireless_charging()
+
+
+def is_recording_video() -> bool:
+    """True if any process owned by this user has a video file open for writing"""
+    uid = os.getuid()
+    for pid in os.listdir("/proc"):
+        if not pid.isdigit():
+            continue
+        try:
+            if os.stat(f"/proc/{pid}").st_uid != uid:
+                continue
+            fds = os.listdir(f"/proc/{pid}/fd")
+        except OSError:
+            continue  # process exited, or not readable
+        for fd in fds:
+            try:
+                target = os.readlink(f"/proc/{pid}/fd/{fd}")
+            except OSError:
+                continue
+            if not target.lower().endswith(VIDEO_EXTENSIONS):
+                continue
+            try:
+                with open(f"/proc/{pid}/fdinfo/{fd}") as info:
+                    flags = next(int(line.split()[1], 8) for line in info if line.startswith("flags:"))
+            except (OSError, ValueError, StopIteration):
+                continue
+            if (flags & os.O_ACCMODE) in (os.O_WRONLY, os.O_RDWR):
+                return True
+    return False

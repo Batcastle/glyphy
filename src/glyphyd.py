@@ -23,7 +23,6 @@
 #
 """Daemon to control Glyph lights"""
 import time
-# import multiprocessing
 import subprocess
 import settings
 import led
@@ -43,7 +42,8 @@ finish = time.time() + length
 ids = {
         "unread_id": None,
         "wireless_charging_id": None,
-        "charging_id": None
+        "charging_id": None,
+        "recording_id": None
     }
 while time.time() <= finish:
     glyphs.check_status()
@@ -72,7 +72,17 @@ while time.time() <= finish:
         ids["charging_id"] = None
 
 
+    if tools.is_recording_video():
+        if ids["recording_id"] is None:
+            ids["recording_id"] = glyphs.play_animation(CONFIG, reason="recording")
+    elif ids["recording_id"] is not None:
+        glyphs.stop_software_animation(ids["recording_id"])
+        ids["recording_id"] = None
+
+
     glyphs.check_status()
+
+    time.sleep(0.05)
 
 
 
