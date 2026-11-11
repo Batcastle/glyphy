@@ -44,7 +44,6 @@ ids = {
         "unread_id": None,
         "wireless_charging_id": None
     }
-charging_animation_playing = False
 while time.time() <= finish:
     glyphs.check_status()
 
@@ -58,15 +57,11 @@ while time.time() <= finish:
         ids["unread_id"] = None
 
     if tools.is_wireless_charging():
-        if not charging_animation_playing:
+        if ids["wireless_charging_id"] is None:
             ids["wireless_charging_id"] = glyphs.play_animation(CONFIG, reason="wireless_charging")
-            charging_animation_playing = True
     elif ids["wireless_charging_id"] is not None:
-        charging_animation_playing = False
-        try:
-            glyphs.stop_software_animation(ids["wireless_charging_id"])
-        except KeyError:
-            print(f"Valid Keys: {glyphs.playing_software_animations.keys()}")
+        glyphs.stop_software_animation(ids["wireless_charging_id"])
+        ids["wireless_charging_id"] = None
 
 
     glyphs.check_status()
