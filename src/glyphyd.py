@@ -42,7 +42,8 @@ length = 90
 finish = time.time() + length
 ids = {
         "unread_id": None,
-        "wireless_charging_id": None
+        "wireless_charging_id": None,
+        "charging_id": None
     }
 while time.time() <= finish:
     glyphs.check_status()
@@ -62,6 +63,13 @@ while time.time() <= finish:
     elif ids["wireless_charging_id"] is not None:
         glyphs.stop_software_animation(ids["wireless_charging_id"])
         ids["wireless_charging_id"] = None
+
+    if tools.is_wireless_charging() or tools.is_charging(wired_only=True):
+        if ids["charging_id"] is None:
+            ids["charging_id"] = glyphs.play_animation(CONFIG, reason="charging")
+    elif ids["charging_id"] is not None:
+        glyphs.stop_software_animation(ids["charging_id"])
+        ids["charging_id"] = None
 
 
     glyphs.check_status()

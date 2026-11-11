@@ -23,6 +23,7 @@
 #
 """Animation definitions for Glyphy"""
 import time
+import tools
 
 
 class _Animate:
@@ -141,6 +142,7 @@ def init() -> dict:
 
         def start(self, frequency=4000):
             """Start animation"""
+            self.started = True
             self.delay = frequency / 2000
             self.step_time = self.delay / 2
             self.time_remaining_in_step = self.delay / 2
@@ -172,6 +174,7 @@ def init() -> dict:
 
         def stop(self):
             """Stop animation"""
+            super().stop()
             self.time_remaining_in_step = -1
             self.step_time = -1
             for each in self._led_objs.items():
@@ -181,7 +184,91 @@ def init() -> dict:
     class Fill(_Animate):
         """Fill Animation"""
         def __init__(self):
-            raise NotImplementedError()
+            """Initialize"""
+            super().__init__()
+            self.cell_count = 0
+            self.size_per_cell = 0
+            self.last_change = 0
+
+        def start(self, frequency=0.1):
+            """Start"""
+            self.delay = 1 / frequency
+            if len(self._led_objs) == 1:
+                if "bar" in self._led_objs:
+                    self.cell_count = len(self._led_objs["bar"].led_objs)
+                else:
+                    self.cell_count = 1
+            else:
+                self.cell_count = len(self._led_objs)
+            self.size_per_cell = 100 / self.cell_count
+            self.tick()
+
+        def tick(self):
+            """Update battery charge percentage"""
+            if time.time() < (self.last_change + self.delay):
+                return
+            charge = tools.battery_percent()
+            cells = round(charge / self.size_per_cell)
+            if len(self._led_objs) == 1:
+                if "bar" in self._led_objs:
+                    for each in range(cells):
+                        self._led_objs["bar"].led_objs[str(each)].set_max_brightness()
+                else:
+                    if charge == 100:
+                        self._led_objs[self._led_objs.keys()[0]].set_max_brightness()
+                    else:
+                        self._led_objs[self._led_objs.keys()[0]].set_off()
+            else:
+                used = []
+                for each in range(cells):
+                    if ("dot" not in used) and ("dot" in self._led_objs):
+                        self._led_objs["dot"].set_max_brightness()
+                        used.append("dot")
+                        if each == (cells - 1):
+                            if "V" in self._led_objs:
+                                self._led_objs["V"].set_off()
+                            if "cam" in self._led_objs:
+                                self._led_objs["cam"].set_off()
+                            if "G" in self._led_objs:
+                                self._led_objs["G"].set_off()
+                            if "bar" in self._led_objs:
+                                self._led_objs["bar"].set_off()
+                    elif ("bar" not in used) and ("bar" in self._led_objs):
+                        self._led_objs["bar"].set_max_brightness()
+                        used.append("bar")
+                        if each == (cells - 1):
+                            if "V" in self._led_objs:
+                                self._led_objs["V"].set_off()
+                            if "cam" in self._led_objs:
+                                self._led_objs["cam"].set_off()
+                            if "G" in self._led_objs:
+                                self._led_objs["G"].set_off()
+                    elif ("G" not in used) and ("G" in self._led_objs):
+                        self._led_objs["G"].set_max_brightness()
+                        used.append("G")
+                        if each == (cells - 1):
+                            if "V" in self._led_objs:
+                                self._led_objs["V"].set_off()
+                            if "cam" in self._led_objs:
+                                self._led_objs["cam"].set_off()
+                    elif ("cam" not in used) and ("cam" in self._led_objs):
+                        self._led_objs["cam"].set_max_brightness()
+                        used.append("cam")
+                        if each == (cells - 1):
+                            if "V" in self._led_objs:
+                                self._led_objs["V"].set_off()
+                    elif ("V" not in used) and ("V" in self._led_objs):
+                        self._led_objs["V"].set_max_brightness()
+                        used.append("V")
+            self.last_change = time.time()
+
+        def stop(self):
+            """Turn off indicated LEDs"""
+            super().stop()
+            for each in self._led_objs.items():
+                each[1].set_off()
+
+
 
     class Cycle(_Animate):
         """Cycle Animation"""
@@ -190,4 +277,5 @@ def init() -> dict:
 
     return {"on": On,
             "blink": Blink,
-            "breath": Breath}
+            "breath": Breath,
+            "fill", Fill}
