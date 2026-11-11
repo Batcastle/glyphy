@@ -311,7 +311,7 @@ class Glyph(Array):
         if reason is None:
             reason = "notification"
         reason = reason.lower()
-        animations = settings_obj.get("../config/animations.json")["animations"]
+        animations = settings_obj.get("animations.json")["animations"]
         settings = animations[reason]
         # If hardware is not defined we can infer it from the name. This is not recommended, but we can infer this thanks to how we discover hardware effects
         if "hardware" not in settings:

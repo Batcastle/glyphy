@@ -32,7 +32,7 @@ class Settings:
         """Setup settings class"""
         self.files = {}
         self.settings = {}
-        self.path = "../config"
+        self.path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "config")
 
     def search(self, path=None) -> dict:
         """Check filesystem for available config files"""

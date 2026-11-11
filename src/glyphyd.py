@@ -32,7 +32,7 @@ import tools
 CONFIG = settings.Settings()
 CONFIG.search()
 CONFIG.load()
-GENERAL_SETTINGS = CONFIG.get("../config/general.json")
+GENERAL_SETTINGS = CONFIG.get("general.json")
 glyphs = led.Glyph(GENERAL_SETTINGS)
 subprocess.check_call(["systemctl", "--user", "stop", "glyphs"])
 screen = tools.ScreenBrightnessFollower()
