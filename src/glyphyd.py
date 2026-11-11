@@ -25,6 +25,7 @@
 import time
 import signal
 import sys
+import subprocess
 import settings
 import led
 import tools
@@ -47,6 +48,10 @@ def _shutdown(_signum, _frame):
 signal.signal(signal.SIGTERM, _shutdown)
 screen = tools.ScreenBrightnessFollower()
 notifications = tools.NotificationWatcher()
+file_watcher = tools.FileWatcher()
+loop_delay = 1 / GENERAL_SETTINGS["general"]["loop_frequency"]
+file_watcher_delay = 1 / GENERAL_SETTINGS["general"]["file_check_frequency"]
+last_file_check = time.time()
 # length = 90
 # finish = time.time() + length
 ids = {
@@ -91,11 +96,31 @@ while True:
         ids["recording_id"] = None
 
 
+    if time.time() >= (last_file_check + file_watcher_delay):
+        if file_watcher.update_contents():
+            break
+        if file_watcher.hash_contents():
+            break
     glyphs.check_status()
-
-    time.sleep(0.05)
-
+    time.sleep(loop_delay)
 
 
 glyphs.set_all_off()
-# subprocess.check_call(["systemctl", "--user", "start", "glyphs"])
+# If we get down here, Glyphy has either been updated or removed. Determine which...
+if file_watcher.contents == []:
+    # We've been removed. Remove the unit file, turn off the lights, and go quietly into that good night
+    subprocess.check_call(["systemctl", "--user", "disable", "glyphy.service"])
+    UNIT = "glyphy.service"
+    UNIT_DIR = os.path.expanduser("~/.config/systemd/user")
+    path = os.path.join(UNIT_DIR, UNIT)
+    os.remove(path)
+    subprocess.check_call(["systemctl", "--user", "daemon-reload"])
+    # We're about to shutdown anyways, but go ahead and call this, just in case
+    try:
+        subprocess.check_call(["systemctl", "--user", "stop", "glyphy.service"])
+    except subprocess.CalledProcessError:
+        # SystemD doesn't see the unit and so doesn't know what to do. We're an orphaned process esentially
+        # But, we're about to shut down anyways, so, we're fine.
+        pass
+# If we didn't go into that if statement above, then we just got updated. Don't remove the unit file, but do turn off the lights as we do not go quietly into that good night
+

@@ -4,7 +4,9 @@
     "max_brightness": 4095,
     "min_brightness": 0,
     "all": ["bar", "dot", "G", "V", "cam"],
-    "sync_brightness_with_screen": true
+    "sync_brightness_with_screen": true,
+    "loop_frequency": 20,
+    "file_check_frequency": 0.1
   },
   "leds": {
     "bar": {

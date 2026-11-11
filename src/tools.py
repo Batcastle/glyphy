@@ -24,6 +24,7 @@
 import random
 from gi.repository import Gio, GLib
 import os
+import hashlib
 
 
 VIDEO_EXTENSIONS = (".mp4", ".m4v", ".mkv", ".webm", ".mov", ".3gp", ".avi", ".ts")
@@ -236,3 +237,43 @@ def is_recording_video() -> bool:
             if (flags & os.O_ACCMODE) in (os.O_WRONLY, os.O_RDWR):
                 return True
     return False
+
+
+class FileWatcher:
+    """Watch files for changes"""
+    def __init__(self):
+        """Initialize"""
+        self.directory = "."
+        self.contents = []
+        self.update_contents()
+        self.hashes = {}
+        self.hash_contents()
+
+    def update_contents(self) -> bool:
+        """Update self.contents. Return True if there was a change."""
+        try:
+            contents = os.listdir(self.directory)
+        except FileNotFoundError:
+            self.contents = []
+            return True
+        if content != self.contents:
+            self.contents = contents
+            return True
+        return False
+
+    def hash_contents(self) -> bool:
+        """Hash files in self.contents. Return True if a hash changed."""
+        new_hashes = {}
+        for each in self.contents:
+            with open(each, 'rb') as file:
+                new_hashes[each] = hashlib.file_digest(file, 'md5').hexdigest()
+        changed = False
+        for each in new_hashes:
+            if each not in self.hashes:
+                changed = True
+                break
+            if self.hashes[each] != new_hashes[each]:
+                changed = True
+                break
+        self.hashes = new_hashes
+        return changed

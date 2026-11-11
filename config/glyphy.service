@@ -4,6 +4,7 @@ Conflicts=glyphs.service
 
 [Service]
 ExecStart=/usr/bin/python3 -u /opt/click.ubuntu.com/glyphy.batcastle/current/src/glyphyd.py
+WorkingDirectory=/opt/click.ubuntu.com/glyphy.batcastle/current/src
 Restart=on-failure
 RestartSec=5
 
