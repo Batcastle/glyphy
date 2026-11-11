@@ -79,13 +79,13 @@ def init() -> dict:
             """Turn on indicated LEDs"""
             super().start(frequency)
             for each in self._led_objs.items():
-                each.set_max_brightness()
+                each[1].set_max_brightness()
 
         def stop(self):
             """Turn off indicated LEDs"""
             super().stop()
             for each in self._led_objs.items():
-                each.set_off()
+                each[1].set_off()
 
         def tick(self):
             """Do one tick of the animation"""
@@ -109,7 +109,7 @@ def init() -> dict:
             """Do one tick of the animation"""
             if time.time() >= (self.last_change + self.delay):
                 for each in self._led_objs.items():
-                    each.toggle()
+                    each[1].toggle()
                 self.last_change = time.time()
 
         def stop(self):
@@ -146,7 +146,7 @@ def init() -> dict:
             self.time_remaining_in_step = self.delay / 2
             self.last_change = time.time()
             for each in self._led_objs.items():
-                each.set_off()
+                each[1].set_off()
 
         def tick(self):
             """Move one tick forward on the animation"""
@@ -165,17 +165,17 @@ def init() -> dict:
                     self.time_remaining_in_step = self.delay / 2
             if self.mode in (True, False):
                 for each in self._led_objs.items():
-                    each.set(self._calc_step_size(each.max))
+                    each[1].set(self._calc_step_size(each.max))
             else:
                 for each in self._led_objs.items():
-                    each.set_off()
+                    each[1].set_off()
 
         def stop(self):
             """Stop animation"""
             self.time_remaining_in_step = -1
             self.step_time = -1
             for each in self._led_objs.items():
-                each.set_off()
+                each[1].set_off()
 
 
     class Fill(_Animate):
