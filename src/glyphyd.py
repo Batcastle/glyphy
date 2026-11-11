@@ -23,13 +23,11 @@
 #
 """Daemon to control Glyph lights"""
 import time
-import json
-import multiprocessing
+# import multiprocessing
 import subprocess
 import settings
 import led
 import tools
-import animations
 
 
 CONFIG = settings.Settings()
@@ -40,7 +38,7 @@ glyphs = led.Glyph(GENERAL_SETTINGS)
 subprocess.check_call(["systemctl", "--user", "stop", "glyphs"])
 screen = tools.ScreenBrightnessFollower()
 notifications = tools.NotificationWatcher()
-length = 60
+length = 90
 finish = time.time() + length
 unread_id = None
 while time.time() <= finish:
@@ -55,6 +53,9 @@ while time.time() <= finish:
         glyphs.stop_software_animation(unread_id)
         unread_id = None
 
+    if tools.is_wireless_charging():
+        glyphs.play_animation(CONFIG, reason="wireless_charging")
+
 
     glyphs.check_status()
 
@@ -62,5 +63,3 @@ while time.time() <= finish:
 
 glyphs.set_all_off()
 subprocess.check_call(["systemctl", "--user", "start", "glyphs"])
-
-

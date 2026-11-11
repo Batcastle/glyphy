@@ -21,8 +21,8 @@
 #  MA 02110-1301, USA.
 #
 #
+"""Animation definitions for Glyphy"""
 import time
-import os
 
 
 class _Animate:
@@ -37,7 +37,7 @@ class _Animate:
 
     def add_led(self, led_name: str, led_obj):
         """Add new LED file"""
-        if led_name not in self._led_objs.keys():
+        if led_name not in self._led_objs:
             self._led_objs[led_name] = led_obj
 
     def start(self, _):
@@ -55,8 +55,8 @@ class _Animate:
     def remove_led(self, led_name: str):
         """Remove LED files"""
         if not self.started:
-            if led_name in self._led_objs.keys():
-                    del self._led_objs[led_name]
+            if led_name in self._led_objs:
+                del self._led_objs[led_name]
         else:
             raise RuntimeError("Cannot edit LED list while animation is running. Stop animation with the stop() method first.")
 
@@ -77,61 +77,117 @@ def init() -> dict:
 
         def start(self, frequency=None):
             """Turn on indicated LEDs"""
-            super(On, self).start(frequency)
-            for each in self._led_objs:
-                self._led_objs[each].set_max_brightness()
+            super().start(frequency)
+            for each in self._led_objs.items():
+                each.set_max_brightness()
 
         def stop(self):
             """Turn off indicated LEDs"""
-            super(On, self).stop()
-            for each in self._led_objs:
-                self._led_objs[each].set_off()
+            super().stop()
+            for each in self._led_objs.items():
+                each.set_off()
 
         def tick(self):
             """Do one tick of the animation"""
-            pass
 
 
     class Blink(On):
         """Simple animation to blink LEDs"""
         def __init__(self):
-            super(Blink, self).__init__()
+            super().__init__()
             self.last_change = -1
             self.delay = -1
 
-        def start(self, frequency=1):
+        def start(self, frequency=1000):
             """Start blinking at set frequency"""
-            # Compute delay between blinks
-            self.delay = frequency / 2
-            super(Blink, self).start()
+            # Compute delay between blinks (Equivlent to converting to seconds then dividing by 2 for delay)
+            self.delay = frequency / 2000
+            super().start()
             self.last_change = time.time()
 
         def tick(self):
             """Do one tick of the animation"""
             if time.time() >= (self.last_change + self.delay):
-                for each in self._led_objs:
-                    self._led_objs[each].toggle()
+                for each in self._led_objs.items():
+                    each.toggle()
                 self.last_change = time.time()
 
         def stop(self):
             """Stop blinking"""
-            super(Blink, self).stop()
+            super().stop()
             self.last_change = -1
             self.delay = -1
 
 
-    class Breath(On):
+    class Breath(Blink):
+        """Make designated LEDs blink"""
         def __init__(self):
-            raise NotImplementedError()
+            """Initialize"""
+            super().__init__()
+            # When mode == True: increasing brightness
+            # When mode == False: decreasing brightness
+            # When mode == None: Off, no changes
+            self.mode = True
+            self.step_time = -1
+            self.time_remaining_in_step = -1
+
+        def _calc_step_size(self, max_brightness) -> int:
+            # This is only ever called when self.mode is a bool
+            if self.mode:
+                scaler = (self.step_time - self.time_remaining_in_step) / self.step_time
+            else:
+                scaler = self.time_remaining_in_step / self.step_time
+            return round(scaler * max_brightness)
+
+        def start(self, frequency=4000):
+            """Start animation"""
+            self.delay = frequency / 2000
+            self.step_time = self.delay / 2
+            self.time_remaining_in_step = self.delay / 2
+            self.last_change = time.time()
+            for each in self._led_objs.items():
+                each.set_off()
+
+        def tick(self):
+            """Move one tick forward on the animation"""
+            elapsed = time.time() - self.last_change
+            self.time_remaining_in_step -= elapsed
+            self.last_change = time.time()
+            if self.time_remaining_in_step <= 0:
+                if self.mode is True:
+                    self.mode = False
+                    self.time_remaining_in_step = self.delay / 2
+                elif self.mode is False:
+                    self.mode = None
+                    self.time_remaining_in_step = self.delay
+                else:
+                    self.mode = True
+                    self.time_remaining_in_step = self.delay / 2
+            if self.mode in (True, False):
+                for each in self._led_objs.items():
+                    each.set(self._calc_step_size(each.max))
+            else:
+                for each in self._led_objs.items():
+                    each.set_off()
+
+        def stop(self):
+            """Stop animation"""
+            self.time_remaining_in_step = -1
+            self.step_time = -1
+            for each in self._led_objs.items():
+                each.set_off()
 
 
     class Fill(_Animate):
+        """Fill Animation"""
         def __init__(self):
             raise NotImplementedError()
 
     class Cycle(_Animate):
+        """Cycle Animation"""
         def __init__(self):
             raise NotImplementedError()
 
     return {"on": On,
-            "blink": Blink}
+            "blink": Blink,
+            "breath": Breath}

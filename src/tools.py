@@ -25,6 +25,9 @@ import random
 from gi.repository import Gio, GLib
 
 
+POWER_SUPPLY = "/sys/class/power_supply"
+
+
 class ScreenBrightnessFollower:
     """Track the user's chosen screen brightness, ignoring dim/off."""
 
@@ -169,3 +172,36 @@ def gen_id(length=8) -> str:
             suffix.append(str(random.choice(allowed_numbers)))
         length -= 1
     return "".join(suffix)
+
+
+def _read_sysfs(path: str):
+    """Read a sysfs attribute, returning None if it doesn't exist or can't be read"""
+    try:
+        with open(path, "r") as file:
+            return file.read().strip()
+    except OSError:
+        return None
+
+
+def _online(supply: str) -> bool:
+    return _read_sysfs(f"{POWER_SUPPLY}/{supply}/online") == "1"
+
+
+def battery_percent() -> float:
+    """Current battery charge in percent, matching what the UI shows"""
+    value = _read_sysfs(f"{POWER_SUPPLY}/battery/capacity")
+    if value is None:
+        raise FileNotFoundError("Could not read battery capacity")
+    return float(value)
+
+
+def is_wireless_charging() -> bool:
+    """True if the phone is drawing power from a wireless charger"""
+    return _online("dc") or _online("wireless")
+
+
+def is_charging(wired_only=False) -> bool:
+    """True if the phone is on external power. With wired_only=True, only USB power counts."""
+    if _online("usb"):
+        return True
+    return False if wired_only else is_wireless_charging()
