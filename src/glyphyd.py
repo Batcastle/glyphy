@@ -23,7 +23,6 @@
 #
 """Daemon to control Glyph lights"""
 import time
-import subprocess
 import signal
 import sys
 import settings

@@ -41,6 +41,8 @@ class Settings:
         files = os.listdir(path)
         output = {}
         for each in files:
+            if each[-5:] != ".json":
+                continue
             output[each] = {"name": f"{path}/{each}",
                            "type": None,
                            "children": {},
