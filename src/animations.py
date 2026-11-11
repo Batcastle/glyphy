@@ -278,4 +278,4 @@ def init() -> dict:
     return {"on": On,
             "blink": Blink,
             "breath": Breath,
-            "fill", Fill}
+            "fill": Fill}
