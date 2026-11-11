@@ -13,7 +13,7 @@
       "leds": [
         "dot"
       ],
-      "frequency": null,
+      "frequency": 0.1,
       "duration": -1
     },
     "recording": {
