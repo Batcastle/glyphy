@@ -40,7 +40,10 @@ screen = tools.ScreenBrightnessFollower()
 notifications = tools.NotificationWatcher()
 length = 90
 finish = time.time() + length
-unread_id = None
+ids = {
+        "unread_id": None,
+        "wireless_charging_id": None
+    }
 charging_animation_playing = False
 while time.time() <= finish:
     glyphs.check_status()
@@ -48,18 +51,19 @@ while time.time() <= finish:
     if notifications.new_notification():
         glyphs.play_animation(CONFIG, reason="notification")
     if tools.has_notifications():
-        if unread_id is None:
-            unread_id = glyphs.play_animation(CONFIG, reason="unread")
-    elif unread_id is not None:
-        glyphs.stop_software_animation(unread_id)
-        unread_id = None
+        if ids["unread_id"] is None:
+            ids["unread_id"] = glyphs.play_animation(CONFIG, reason="unread")
+    elif ids["unread_id"] is not None:
+        glyphs.stop_software_animation(ids["unread_id"])
+        ids["unread_id"] = None
 
     if tools.is_wireless_charging():
         if not charging_animation_playing:
-            glyphs.play_animation(CONFIG, reason="wireless_charging")
+            ids["wireless_charging_id"] = glyphs.play_animation(CONFIG, reason="wireless_charging")
             charging_animation_playing = True
     else:
         charging_animation_playing = False
+        glyphs.stop_software_animation(ids["wireless_charging_id"])
 
 
     glyphs.check_status()
