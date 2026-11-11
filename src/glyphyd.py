@@ -61,7 +61,7 @@ while time.time() <= finish:
         if not charging_animation_playing:
             ids["wireless_charging_id"] = glyphs.play_animation(CONFIG, reason="wireless_charging")
             charging_animation_playing = True
-    else:
+    elif ids["wireless_charging_id"] is not None:
         charging_animation_playing = False
         glyphs.stop_software_animation(ids["wireless_charging_id"])
 
