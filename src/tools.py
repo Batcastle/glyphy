@@ -240,40 +240,38 @@ def is_recording_video() -> bool:
 
 
 class FileWatcher:
-    """Watch files for changes"""
-    def __init__(self):
-        """Initialize"""
-        self.directory = "."
+    """Watch the daemon's own source directory for updates or removal"""
+    def __init__(self, directory=None):
+        # abspath, not realpath: keep the click's "current" symlink in the path, so an
+        # update shows up as new files rather than as the old directory going empty
+        self.directory = directory or os.path.dirname(os.path.abspath(__file__))
         self.contents = []
-        self.update_contents()
         self.hashes = {}
+        self.update_contents()
         self.hash_contents()
 
     def update_contents(self) -> bool:
         """Update self.contents. Return True if there was a change."""
         try:
-            contents = os.listdir(self.directory)
+            contents = sorted(name for name in os.listdir(self.directory)
+                              if os.path.isfile(os.path.join(self.directory, name)))
         except FileNotFoundError:
             self.contents = []
             return True
-        if content != self.contents:
+        if contents != self.contents:
             self.contents = contents
             return True
         return False
 
     def hash_contents(self) -> bool:
-        """Hash files in self.contents. Return True if a hash changed."""
+        """Hash files in self.contents. Return True if anything changed."""
         new_hashes = {}
-        for each in self.contents:
-            with open(each, 'rb') as file:
-                new_hashes[each] = hashlib.file_digest(file, 'md5').hexdigest()
-        changed = False
-        for each in new_hashes:
-            if each not in self.hashes:
-                changed = True
-                break
-            if self.hashes[each] != new_hashes[each]:
-                changed = True
-                break
+        try:
+            for each in self.contents:
+                with open(os.path.join(self.directory, each), "rb") as file:
+                    new_hashes[each] = hashlib.file_digest(file, "md5").hexdigest()
+        except FileNotFoundError:
+            return True  # changed mid-check; the caller decides update vs. removal
+        changed = new_hashes != self.hashes
         self.hashes = new_hashes
         return changed

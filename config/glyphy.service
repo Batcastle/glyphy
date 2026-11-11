@@ -7,6 +7,8 @@ ExecStart=/usr/bin/python3 -u /opt/click.ubuntu.com/glyphy.batcastle/current/src
 WorkingDirectory=/opt/click.ubuntu.com/glyphy.batcastle/current/src
 Restart=on-failure
 RestartSec=5
+RestartForceExitStatus=75
+SuccessExitStatus=75
 
 [Install]
 WantedBy=default.target

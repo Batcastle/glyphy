@@ -26,6 +26,7 @@ import time
 import signal
 import sys
 import subprocess
+import os
 import settings
 import led
 import tools
@@ -97,9 +98,8 @@ while True:
 
 
     if time.time() >= (last_file_check + file_watcher_delay):
-        if file_watcher.update_contents():
-            break
-        if file_watcher.hash_contents():
+        last_file_check = time.time()
+        if file_watcher.update_contents() or file_watcher.hash_contents():
             break
     glyphs.check_status()
     time.sleep(loop_delay)
@@ -107,20 +107,16 @@ while True:
 
 glyphs.set_all_off()
 # If we get down here, Glyphy has either been updated or removed. Determine which...
-if file_watcher.contents == []:
+if not os.path.isdir(file_watcher.directory):
     # We've been removed. Remove the unit file, turn off the lights, and go quietly into that good night
     subprocess.check_call(["systemctl", "--user", "disable", "glyphy.service"])
-    UNIT = "glyphy.service"
-    UNIT_DIR = os.path.expanduser("~/.config/systemd/user")
-    path = os.path.join(UNIT_DIR, UNIT)
-    os.remove(path)
-    subprocess.check_call(["systemctl", "--user", "daemon-reload"])
-    # We're about to shutdown anyways, but go ahead and call this, just in case
     try:
-        subprocess.check_call(["systemctl", "--user", "stop", "glyphy.service"])
-    except subprocess.CalledProcessError:
-        # SystemD doesn't see the unit and so doesn't know what to do. We're an orphaned process esentially
-        # But, we're about to shut down anyways, so, we're fine.
+        os.remove(os.path.expanduser("~/.config/systemd/user/glyphy.service"))
+    except FileNotFoundError:
         pass
-# If we didn't go into that if statement above, then we just got updated. Don't remove the unit file, but do turn off the lights as we do not go quietly into that good night
+    subprocess.run(["systemctl", "--user", "daemon-reload"])
+else:
+    # If we didn't go into that if statement above, then we just got updated. Don't remove the unit file, but do turn off the lights as we do not go quietly into that good night
+    # We do have to exit on failure though so that systemd restarts us.
+    sys.exit(75)
 
