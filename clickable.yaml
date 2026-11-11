@@ -1,4 +1,6 @@
 clickable_minimum_required: 8.8.0
-builder: pure-qml-cmake
+builder: pure
 kill: qmlscene
 framework: ubuntu-touch-24.04-1.x
+ignore:
+    - src/__pycache__

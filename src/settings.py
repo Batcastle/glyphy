@@ -62,8 +62,9 @@ class Settings:
         for each in files_to_process:
             if files_to_process[each]["type"] == "file":
                 with open(files_to_process[each]["name"], "r") as file:
+                    key = os.path.relpath(files_to_process[each]["name"], self.path)
                     try:
-                        output[files_to_process[each]["name"]] = json.load(file)
+                        output[key] = json.load(file)
                     except json.decoder.JSONDecodeError:
                         print(f"JSON formatting error in file: {files_to_process[each]["name"]} ; not importing...")
             elif files_to_process[each]["type"] == "dir":

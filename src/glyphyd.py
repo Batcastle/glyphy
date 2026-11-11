@@ -24,6 +24,8 @@
 """Daemon to control Glyph lights"""
 import time
 import subprocess
+import signal
+import sys
 import settings
 import led
 import tools
@@ -34,7 +36,16 @@ CONFIG.search()
 CONFIG.load()
 GENERAL_SETTINGS = CONFIG.get("general.json")
 glyphs = led.Glyph(GENERAL_SETTINGS)
-subprocess.check_call(["systemctl", "--user", "stop", "glyphs"])
+# This was here for stopping the glyph-lights service, which we are working on replacing.
+# subprocess.check_call(["systemctl", "--user", "stop", "glyphs"])
+
+
+def _shutdown(_signum, _frame):
+       glyphs.set_all_off()
+       sys.exit(0)
+
+
+signal.signal(signal.SIGTERM, _shutdown)
 screen = tools.ScreenBrightnessFollower()
 notifications = tools.NotificationWatcher()
 # length = 90
