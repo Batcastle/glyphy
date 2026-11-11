@@ -22,6 +22,7 @@
 #
 #
 """systemctl wrapper used by the Glyphy settings app"""
+import json
 import os
 import subprocess
 
@@ -48,6 +49,21 @@ def status() -> dict:
         if key in output:
             output[key] = value
     return output
+
+
+def raw_status() -> str:
+    """Return the output of `systemctl --user status glyphy.service`"""
+    result = _systemctl("status", UNIT, "--no-pager", "--full")
+    return (result.stdout + result.stderr).strip()
+
+
+def version() -> str:
+    """Return the version of Glyphy from the package manifest"""
+    try:
+        with open(os.path.join(APP_ROOT, "manifest.json")) as file:
+            return str(json.load(file).get("version", ""))
+    except (OSError, ValueError):
+        return ""
 
 
 def run(action: str) -> dict:
@@ -81,3 +97,25 @@ def install() -> dict:
         if result.returncode != 0:
             return {"ok": False, "message": result.stderr.strip()}
     return {"ok": True, "message": ""}
+
+
+def uninstall() -> dict:
+    """Stop and disable the unit, then remove its file"""
+    _systemctl("disable", "--now", UNIT)
+    try:
+        os.remove(os.path.join(UNIT_DIR, UNIT))
+    except FileNotFoundError:
+        pass
+    except OSError as error:
+        return {"ok": False, "message": f"Could not remove {UNIT}: {error}"}
+    _systemctl("daemon-reload")
+    _systemctl("reset-failed", UNIT)
+    return {"ok": True, "message": ""}
+
+
+def reinstall() -> dict:
+    """Remove the unit, then install a fresh copy from config/glyphy.service"""
+    result = uninstall()
+    if not result["ok"]:
+        return result
+    return install()

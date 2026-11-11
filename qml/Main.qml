@@ -35,6 +35,8 @@ MainView {
     property string unitFileState: ""
     property string errorText: ""
     property bool installPromptShown: false
+    property string appVersion: ""
+    property string rawStatus: ""
 
     readonly property bool installed: ready && loadState !== "" && loadState !== "not-found"
     readonly property bool running: activeState === "active"
@@ -44,6 +46,9 @@ MainView {
         if (!ready)
             return
         python.call("service_control.status", [], function(result) {
+            var changed = result.LoadState !== loadState
+                          || result.ActiveState !== activeState
+                          || result.UnitFileState !== unitFileState
             loadState = result.LoadState
             activeState = result.ActiveState
             unitFileState = result.UnitFileState
@@ -51,19 +56,41 @@ MainView {
                 installPromptShown = true
                 PopupUtils.open(installDialog)
             }
+            if (changed)
+                refreshRawStatus()
+        })
+    }
+
+    function refreshRawStatus() {
+        if (!ready)
+            return
+        python.call("service_control.raw_status", [], function(result) {
+            rawStatus = result
+        })
+    }
+
+    function callService(func, failMessage) {
+        busy = true
+        errorText = ""
+        python.call("service_control." + func, [], function(result) {
+            busy = false
+            if (!result.ok)
+                errorText = result.message !== "" ? result.message : failMessage
+            refresh()
+            refreshRawStatus()
         })
     }
 
     function installService() {
-        busy = true
-        errorText = ""
-        python.call("service_control.install", [], function(result) {
-            busy = false
-            if (!result.ok)
-                errorText = result.message !== "" ? result.message
-                                                  : i18n.tr("Installing the service failed")
-            refresh()
-        })
+        callService("install", i18n.tr("Installing the service failed"))
+    }
+
+    function uninstallService() {
+        callService("uninstall", i18n.tr("Uninstalling the service failed"))
+    }
+
+    function reinstallService() {
+        callService("reinstall", i18n.tr("Reinstalling the service failed"))
     }
 
     function act(action) {
@@ -75,6 +102,7 @@ MainView {
                 errorText = result.message !== "" ? result.message
                                                   : i18n.tr("systemctl %1 failed").arg(action)
             refresh()
+            refreshRawStatus()
         })
     }
 
@@ -243,6 +271,69 @@ MainView {
                     color: theme.palette.normal.negative
                     text: root.errorText
                 }
+
+                Label {
+                    visible: root.installed
+                    text: i18n.tr("Service file")
+                    textSize: Label.Large
+                    font.weight: Font.DemiBold
+                }
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    visible: root.installed
+                    spacing: units.gu(1)
+
+                    Button {
+                        Layout.fillWidth: true
+                        text: i18n.tr("Reinstall")
+                        enabled: !root.busy
+                        onClicked: root.reinstallService()
+                    }
+                    Button {
+                        Layout.fillWidth: true
+                        text: i18n.tr("Uninstall")
+                        color: theme.palette.normal.negative
+                        enabled: !root.busy
+                        onClicked: PopupUtils.open(uninstallDialog)
+                    }
+                }
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: units.gu(1)
+
+                    Label {
+                        Layout.fillWidth: true
+                        text: i18n.tr("systemd status")
+                        textSize: Label.Large
+                        font.weight: Font.DemiBold
+                    }
+                    Button {
+                        text: i18n.tr("Refresh")
+                        enabled: root.ready
+                        onClicked: root.refreshRawStatus()
+                    }
+                }
+
+                TextArea {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: units.gu(30)
+                    readOnly: true
+                    selectByMouse: true
+                    wrapMode: TextEdit.WrapAnywhere
+                    font.family: "Ubuntu Mono"
+                    textFormat: TextEdit.PlainText
+                    text: root.rawStatus
+                }
+
+                Label {
+                    Layout.alignment: Qt.AlignHCenter
+                    visible: root.appVersion !== ""
+                    text: i18n.tr("Glyphy %1").arg(root.appVersion)
+                    textSize: Label.Small
+                    color: theme.palette.normal.backgroundSecondaryText
+                }
             }
         }
     }
@@ -296,6 +387,29 @@ MainView {
         }
     }
 
+    Component {
+        id: uninstallDialog
+
+        Dialog {
+            id: dialog
+            title: i18n.tr("Uninstall the service?")
+            text: i18n.tr("This stops Glyphy's background service, stops it from starting at login, and removes its unit file. You can install it again from here at any time.")
+
+            Button {
+                text: i18n.tr("Uninstall")
+                color: theme.palette.normal.negative
+                onClicked: {
+                    PopupUtils.close(dialog)
+                    root.uninstallService()
+                }
+            }
+            Button {
+                text: i18n.tr("Cancel")
+                onClicked: PopupUtils.close(dialog)
+            }
+        }
+    }
+
     Timer {
         interval: 2000
         repeat: true
@@ -310,7 +424,11 @@ MainView {
             addImportPath(Qt.resolvedUrl("."))
             importModule("service_control", function() {
                 root.ready = true
+                python.call("service_control.version", [], function(result) {
+                    root.appVersion = result
+                })
                 root.refresh()
+                root.refreshRawStatus()
             })
         }
 
