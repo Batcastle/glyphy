@@ -165,7 +165,7 @@ def init() -> dict:
                     self.time_remaining_in_step = self.delay / 2
             if self.mode in (True, False):
                 for each in self._led_objs.items():
-                    each[1].set(self._calc_step_size(each.max))
+                    each[1].set(self._calc_step_size(each[1].max))
             else:
                 for each in self._led_objs.items():
                     each[1].set_off()
