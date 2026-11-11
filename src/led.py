@@ -221,6 +221,8 @@ class Glyph(Array):
         self.playing_hardware_animations = {}
         self.playing_software_animations = {}
         self.software_animations = animations.init()
+        if self.gen_config["sync_brightness_with_screen"]:
+            self.brightness_watcher = tools.ScreenBrightnessFollower()
 
     def play_hardware_animation(self, animation_name: str, duration=4000):
         """Play a hardware-enabled animation, duration in milliseconds"""
@@ -267,6 +269,10 @@ class Glyph(Array):
                 self.playing_software_animations[each]["animation_object"].tick()
         for each in delete:
             self.stop_software_animation(each)
+        if self.gen_config["sync_brightness_with_screen"]:
+            brightness = self.brightness_watcher.get()
+            for each in self.led_objs:
+                self.led_objs[each].change_max_brightness(round(brightness * self.led_objs[each].absolute_max))
         tools.enforce_brightness(self.led_objs)
 
     def play_software_animation(self, animation, leds="all", duration=4000) -> str:

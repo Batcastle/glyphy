@@ -37,15 +37,16 @@ glyphs = led.Glyph(GENERAL_SETTINGS)
 subprocess.check_call(["systemctl", "--user", "stop", "glyphs"])
 screen = tools.ScreenBrightnessFollower()
 notifications = tools.NotificationWatcher()
-length = 90
-finish = time.time() + length
+# length = 90
+# finish = time.time() + length
 ids = {
         "unread_id": None,
         "wireless_charging_id": None,
         "charging_id": None,
         "recording_id": None
     }
-while time.time() <= finish:
+# while time.time() <= finish:
+while True:
     glyphs.check_status()
 
     if notifications.new_notification():
@@ -87,4 +88,4 @@ while time.time() <= finish:
 
 
 glyphs.set_all_off()
-subprocess.check_call(["systemctl", "--user", "start", "glyphs"])
+# subprocess.check_call(["systemctl", "--user", "start", "glyphs"])
