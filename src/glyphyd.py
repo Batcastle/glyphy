@@ -41,6 +41,7 @@ notifications = tools.NotificationWatcher()
 length = 90
 finish = time.time() + length
 unread_id = None
+charging_animation_playing = False
 while time.time() <= finish:
     glyphs.check_status()
 
@@ -54,7 +55,11 @@ while time.time() <= finish:
         unread_id = None
 
     if tools.is_wireless_charging():
-        glyphs.play_animation(CONFIG, reason="wireless_charging")
+        if not charging_animation_playing:
+            glyphs.play_animation(CONFIG, reason="wireless_charging")
+            charging_animation_playing = True
+    else:
+        charging_animation_playing = False
 
 
     glyphs.check_status()
