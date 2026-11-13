@@ -22,6 +22,7 @@
 #
 #
 import random
+import time
 from gi.repository import Gio, GLib
 import os
 import hashlib
@@ -29,7 +30,46 @@ import hashlib
 
 VIDEO_EXTENSIONS = (".mp4", ".m4v", ".mkv", ".webm", ".mov", ".3gp", ".avi", ".ts")
 POWER_SUPPLY = "/sys/class/power_supply"
+_OFONO = "org.ofono"
+_VCM = "org.ofono.VoiceCallManager"
+# Modems rarely change, so look them up every few seconds rather than on every poll
+_modem_cache = {"paths": [], "checked": 0.0}
 
+
+def _voice_modems(bus) -> list:
+    """Paths of modems that can currently handle voice calls (e.g. one per SIM)"""
+    if time.time() - _modem_cache["checked"] < 5:
+        return _modem_cache["paths"]
+    try:
+        modems = bus.call_sync(_OFONO, "/", "org.ofono.Manager", "GetModems", None,
+                               GLib.VariantType("(a(oa{sv}))"), Gio.DBusCallFlags.NONE,
+                               1000, None).unpack()[0]
+    except GLib.Error:
+        modems = []
+    _modem_cache["paths"] = [path for path, properties in modems
+                             if _VCM in properties.get("Interfaces", [])]
+    _modem_cache["checked"] = time.time()
+    return _modem_cache["paths"]
+
+
+def receiving_call() -> bool:
+    """True while a call is ringing and hasn't been answered or declined yet.
+    "waiting" is a second call ringing while you're already on one."""
+    try:
+        bus = Gio.bus_get_sync(Gio.BusType.SYSTEM, None)
+    except GLib.Error:
+        return False
+    for path in _voice_modems(bus):
+        try:
+            calls = bus.call_sync(_OFONO, path, _VCM, "GetCalls", None,
+                                  GLib.VariantType("(a(oa{sv}))"), Gio.DBusCallFlags.NONE,
+                                  1000, None).unpack()[0]
+        except GLib.Error:
+            _modem_cache["checked"] = 0.0  # modem went away; look again next time
+            continue
+        if any(properties.get("State") in ("incoming") for _call, properties in calls):
+            return True
+    return False
 
 class ScreenBrightnessFollower:
     """Track the user's chosen screen brightness, ignoring dim/off."""

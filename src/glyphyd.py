@@ -66,7 +66,8 @@ ids = {
         "unread_id": None,
         "wireless_charging_id": None,
         "charging_id": None,
-        "recording_id": None
+        "recording_id": None,
+        "call_id": None
     }
 # while time.time() <= finish:
 glyphs.set_all_off()
@@ -126,6 +127,18 @@ while True:
                 print("STOPPING RECORDING ANIMATION")
             glyphs.stop_software_animation(ids["recording_id"])
             ids["recording_id"] = None
+
+    if ANI_SETTINGS["call"]["enabled"]:
+        if tools.receiving_call():
+            if ids["call_id"] is None:
+                if DEBUG:
+                    print("PLAYING INCOMING CALL ANIMATION")
+                ids["call_id"] = glyphs.play_animation(CONFIG, reason="call")
+        elif ids["call_id"] is not None:
+            if DEBUG:
+                print("STOPPING INCOMING CALL ANIMATION")
+            glyphs.stop_software_animation(ids["call_id"])
+            ids["call_id"] = None
 
 
     if time.time() >= (last_file_check + file_watcher_delay):

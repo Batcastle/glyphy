@@ -59,6 +59,16 @@
       "frequency": 0.2,
       "duration": -1,
       "enabled": true
+    },
+    "call": {
+      "name": "Incoming Calls",
+      "description": "Play an animation receiving an incoming call",
+      "pattern": "random_leds_effect",
+      "hardware": true,
+      "leds": [],
+      "frequency": null,
+      "duration": -1,
+      "enabled": true
     }
   }
 }

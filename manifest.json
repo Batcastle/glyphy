@@ -9,7 +9,7 @@
             "desktop":  "glyphy.desktop"
         }
     },
-    "version": "1.0.7",
+    "version": "1.0.8",
     "maintainer": "Thomas Castleman <batcastle@draugeros.org>",
     "framework": "@CLICK_FRAMEWORK@"
 }
