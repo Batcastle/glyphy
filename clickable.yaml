@@ -3,4 +3,4 @@ builder: pure
 kill: qmlscene
 framework: ubuntu-touch-24.04-1.x
 ignore:
-    - src/__pycache__
+    - __pycache__

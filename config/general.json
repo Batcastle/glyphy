@@ -6,7 +6,8 @@
     "all": ["bar", "dot", "G", "V", "cam"],
     "sync_brightness_with_screen": true,
     "loop_frequency": 20,
-    "file_check_frequency": 0.1
+    "file_check_frequency": 0.1,
+    "debug_mode": false
   },
   "leds": {
     "bar": {

@@ -36,6 +36,10 @@ CONFIG = settings.Settings()
 CONFIG.search()
 CONFIG.load()
 GENERAL_SETTINGS = CONFIG.get("general.json")
+DEBUG = False
+if len(sys.argv) >= 2:
+    if (sys.argv[1] in ("-d", "--debug")) or (GENERAL_SETTINGS["general"]["debug_mode"]):
+        DEBUG = True
 ANI_SETTINGS = CONFIG.get("animations.json")["animations"]
 glyphs = led.Glyph(GENERAL_SETTINGS)
 # This was here for stopping the glyph-lights service, which we are working on replacing.
@@ -63,42 +67,61 @@ ids = {
         "recording_id": None
     }
 # while time.time() <= finish:
+glyphs.set_all_off()
 while True:
     glyphs.check_status()
 
     if ANI_SETTINGS["notification"]["enabled"]:
         if notifications.new_notification():
+            if DEBUG:
+                print("PLAYING NEW NOTIFICATION ANIMATION")
             glyphs.play_animation(CONFIG, reason="notification")
 
     if ANI_SETTINGS["unread"]["enabled"]:
         if tools.has_notifications():
             if ids["unread_id"] is None:
+                if DEBUG:
+                    print("PLAYING UNREAD NOTIFICATION ANIMATION")
                 ids["unread_id"] = glyphs.play_animation(CONFIG, reason="unread")
         elif ids["unread_id"] is not None:
+            if DEBUG:
+                print("STOPPING UNREAD NOTIFICATION ANIMATION")
             glyphs.stop_software_animation(ids["unread_id"])
             ids["unread_id"] = None
 
     if ANI_SETTINGS["wireless_charging"]["enabled"]:
         if tools.is_wireless_charging():
             if ids["wireless_charging_id"] is None:
+                if DEBUG:
+                    print("PLAYING WIRELESS CHARGING ANIMATION")
                 ids["wireless_charging_id"] = glyphs.play_animation(CONFIG, reason="wireless_charging")
         elif ids["wireless_charging_id"] is not None:
+            if DEBUG:
+                print("STOPPING WIRELESS CHARGING ANIMATION")
             glyphs.stop_software_animation(ids["wireless_charging_id"])
             ids["wireless_charging_id"] = None
 
     if ANI_SETTINGS["charging"]["enabled"]:
         if tools.is_wireless_charging() or tools.is_charging(wired_only=True):
             if ids["charging_id"] is None:
+                if DEBUG:
+                    print("PLAYING CHARGING ANIMATION")
                 ids["charging_id"] = glyphs.play_animation(CONFIG, reason="charging")
         elif ids["charging_id"] is not None:
+            if DEBUG:
+                print("STOPPING CHARGING ANIMATION")
             glyphs.stop_software_animation(ids["charging_id"])
             ids["charging_id"] = None
 
     if ANI_SETTINGS["recording"]["enabled"]:
         if tools.is_recording_video():
             if ids["recording_id"] is None:
+                if DEBUG:
+                    print("PLAYING RECORDING ANIMATION")
                 ids["recording_id"] = glyphs.play_animation(CONFIG, reason="recording")
         elif ids["recording_id"] is not None:
+            if DEBUG:
+                print("STOPPING RECORDING ANIMATION")
             glyphs.stop_software_animation(ids["recording_id"])
             ids["recording_id"] = None
 
@@ -110,7 +133,8 @@ while True:
     glyphs.check_status()
     time.sleep(loop_delay)
 
-
+if DEBUG:
+    print("CHANGE IN FILESYSTEM STATUS DETECTED. SHUTTING DOWN...")
 glyphs.set_all_off()
 # If we get down here, Glyphy has either been updated or removed. Determine which...
 if not os.path.isdir(file_watcher.directory):

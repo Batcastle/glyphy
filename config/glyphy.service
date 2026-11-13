@@ -3,7 +3,7 @@ Description=Glyphy glyph light daemon
 Conflicts=glyphs.service
 
 [Service]
-ExecStart=/usr/bin/python3 -u @APP_DIR@/src/glyphyd.py
+ExecStart=@APP_DIR@/src/glyphyd.py
 WorkingDirectory=@APP_DIR@/src
 Restart=on-failure
 RestartSec=5
