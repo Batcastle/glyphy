@@ -88,17 +88,21 @@ class ScreenBrightnessFollower:
 
 
 def has_notifications() -> bool:
-    """Return True if the notification drawer currently holds any notifications."""
+    """Return True if any app has a message, or a source with a non-zero count, in the drawer"""
     bus = Gio.bus_get_sync(Gio.BusType.SESSION, None)
     try:
         result = bus.call_sync(
             "org.ayatana.indicator.messages", "/org/ayatana/indicator/messages",
-            "org.gtk.Actions", "Describe", GLib.Variant("(s)", ("remove-all",)),
-            GLib.VariantType("((bgav))"), Gio.DBusCallFlags.NONE, 1000, None)
+            "org.gtk.Actions", "DescribeAll", None,
+            GLib.VariantType("(a{s(bgav)})"), Gio.DBusCallFlags.NONE, 1000, None)
     except GLib.Error:
         return False  # indicator not running or not reachable
-    enabled, _param_type, _state = result.unpack()[0]
-    return enabled
+    for name, (_enabled, _param_type, state) in result.unpack()[0].items():
+        if ".msg." in name:
+            return True
+        if ".src." in name and state and state[0][0] > 0:  # state is (count, time, string, attention)
+            return True
+    return False
 
 
 def enforce_brightness(led_objs: dict):

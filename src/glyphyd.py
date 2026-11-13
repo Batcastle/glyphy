@@ -38,8 +38,10 @@ CONFIG.load()
 GENERAL_SETTINGS = CONFIG.get("general.json")
 DEBUG = False
 if len(sys.argv) >= 2:
-    if (sys.argv[1] in ("-d", "--debug")) or (GENERAL_SETTINGS["general"]["debug_mode"]):
+    if sys.argv[1] in ("-d", "--debug"):
         DEBUG = True
+elif GENERAL_SETTINGS["general"]["debug_mode"]:
+    DEBUG = True
 ANI_SETTINGS = CONFIG.get("animations.json")["animations"]
 glyphs = led.Glyph(GENERAL_SETTINGS)
 # This was here for stopping the glyph-lights service, which we are working on replacing.

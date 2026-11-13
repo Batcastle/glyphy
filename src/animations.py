@@ -144,7 +144,7 @@ def init() -> dict:
         def start(self, frequency=0.25):
             """Start animation"""
             self.started = True
-            self.delay = (1 / frequency) * 1000
+            self.delay = (1 / frequency)
             self.delay = self.delay / 2
             self.step_time = self.delay / 2
             self.time_remaining_in_step = self.delay / 2
