@@ -37,6 +37,7 @@ MainView {
     property bool installPromptShown: false
     property string appVersion: ""
     property string rawStatus: ""
+    property bool settingsReady: false
 
     readonly property bool installed: ready && loadState !== "" && loadState !== "not-found"
     readonly property bool running: activeState === "active"
@@ -91,6 +92,14 @@ MainView {
 
     function reinstallService() {
         callService("reinstall", i18n.tr("Reinstalling the service failed"))
+    }
+
+    function callPython(name, args, callback) {
+        python.call(name, args, callback)
+    }
+
+    function confirmUninstall() {
+        PopupUtils.open(uninstallDialog)
     }
 
     function act(action) {
@@ -158,183 +167,39 @@ MainView {
         header: PageHeader {
             id: header
             title: i18n.tr("Glyphy")
+            subtitle: root.appVersion !== "" ? i18n.tr("Version %1").arg(root.appVersion) : ""
+
+            extension: Sections {
+                id: sections
+                anchors {
+                    left: parent.left
+                    leftMargin: units.gu(2)
+                    bottom: parent.bottom
+                }
+                model: [i18n.tr("Settings"), i18n.tr("Service")]
+            }
         }
 
-        Flickable {
+        SettingsTab {
             anchors {
                 top: header.bottom
                 left: parent.left
                 right: parent.right
                 bottom: parent.bottom
             }
-            contentHeight: content.height + units.gu(4)
-            clip: true
+            visible: sections.selectedIndex === 0
+            app: root
+        }
 
-            ColumnLayout {
-                id: content
-                anchors {
-                    top: parent.top
-                    left: parent.left
-                    right: parent.right
-                    margins: units.gu(2)
-                }
-                spacing: units.gu(2)
-
-                Label {
-                    text: i18n.tr("Service")
-                    textSize: Label.Large
-                    font.weight: Font.DemiBold
-                }
-
-                StatusRow {
-                    label: i18n.tr("Status")
-                    value: root.runningText()
-                    indicatorColor: root.runningColor()
-                }
-
-                StatusRow {
-                    label: i18n.tr("Start at login")
-                    value: root.enabledText()
-                    indicatorColor: root.enabledColor()
-                }
-
-                Label {
-                    Layout.fillWidth: true
-                    visible: root.ready && !root.installed
-                    wrapMode: Text.Wrap
-                    text: i18n.tr("The Glyphy service isn't installed, so it can't be controlled yet.")
-                }
-
-                Button {
-                    Layout.fillWidth: true
-                    visible: root.ready && !root.installed
-                    text: i18n.tr("Install service")
-                    color: theme.palette.normal.positive
-                    enabled: !root.busy
-                    onClicked: root.installService()
-                }
-
-                RowLayout {
-                    Layout.fillWidth: true
-                    spacing: units.gu(1)
-
-                    Button {
-                        Layout.fillWidth: true
-                        text: i18n.tr("Start")
-                        color: theme.palette.normal.positive
-                        enabled: root.installed && !root.busy && !root.running
-                        onClicked: root.act("start")
-                    }
-                    Button {
-                        Layout.fillWidth: true
-                        text: i18n.tr("Stop")
-                        color: theme.palette.normal.negative
-                        enabled: root.installed && !root.busy && root.running
-                        onClicked: root.act("stop")
-                    }
-                    Button {
-                        Layout.fillWidth: true
-                        text: i18n.tr("Restart")
-                        enabled: root.installed && !root.busy
-                        onClicked: root.act("restart")
-                    }
-                }
-
-                RowLayout {
-                    Layout.fillWidth: true
-                    spacing: units.gu(1)
-
-                    Button {
-                        Layout.fillWidth: true
-                        text: i18n.tr("Enable")
-                        enabled: root.installed && !root.busy && !root.enabledAtLogin
-                        onClicked: root.act("enable")
-                    }
-                    Button {
-                        Layout.fillWidth: true
-                        text: i18n.tr("Disable")
-                        enabled: root.installed && !root.busy && root.enabledAtLogin
-                        onClicked: root.act("disable")
-                    }
-                }
-
-                ActivityIndicator {
-                    Layout.alignment: Qt.AlignHCenter
-                    running: root.busy
-                    visible: root.busy
-                }
-
-                Label {
-                    Layout.fillWidth: true
-                    visible: root.errorText !== ""
-                    wrapMode: Text.Wrap
-                    color: theme.palette.normal.negative
-                    text: root.errorText
-                }
-
-                Label {
-                    visible: root.installed
-                    text: i18n.tr("Service file")
-                    textSize: Label.Large
-                    font.weight: Font.DemiBold
-                }
-
-                RowLayout {
-                    Layout.fillWidth: true
-                    visible: root.installed
-                    spacing: units.gu(1)
-
-                    Button {
-                        Layout.fillWidth: true
-                        text: i18n.tr("Reinstall")
-                        enabled: !root.busy
-                        onClicked: root.reinstallService()
-                    }
-                    Button {
-                        Layout.fillWidth: true
-                        text: i18n.tr("Uninstall")
-                        color: theme.palette.normal.negative
-                        enabled: !root.busy
-                        onClicked: PopupUtils.open(uninstallDialog)
-                    }
-                }
-
-                RowLayout {
-                    Layout.fillWidth: true
-                    spacing: units.gu(1)
-
-                    Label {
-                        Layout.fillWidth: true
-                        text: i18n.tr("systemd status")
-                        textSize: Label.Large
-                        font.weight: Font.DemiBold
-                    }
-                    Button {
-                        text: i18n.tr("Refresh")
-                        enabled: root.ready
-                        onClicked: root.refreshRawStatus()
-                    }
-                }
-
-                TextArea {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: units.gu(30)
-                    readOnly: true
-                    selectByMouse: true
-                    wrapMode: TextEdit.WrapAnywhere
-                    font.family: "Ubuntu Mono"
-                    textFormat: TextEdit.PlainText
-                    text: root.rawStatus
-                }
-
-                Label {
-                    Layout.alignment: Qt.AlignHCenter
-                    visible: root.appVersion !== ""
-                    text: i18n.tr("Glyphy %1").arg(root.appVersion)
-                    textSize: Label.Small
-                    color: theme.palette.normal.backgroundSecondaryText
-                }
+        ServiceTab {
+            anchors {
+                top: header.bottom
+                left: parent.left
+                right: parent.right
+                bottom: parent.bottom
             }
+            visible: sections.selectedIndex === 1
+            app: root
         }
     }
 
@@ -429,6 +294,9 @@ MainView {
                 })
                 root.refresh()
                 root.refreshRawStatus()
+            })
+            importModule("settings_control", function() {
+                root.settingsReady = true
             })
         }
 

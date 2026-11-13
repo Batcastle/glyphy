@@ -22,6 +22,7 @@
 #
 #
 """systemctl wrapper used by the Glyphy settings app"""
+import glob
 import json
 import os
 import subprocess
@@ -36,8 +37,9 @@ PROPERTIES = ("LoadState", "ActiveState", "UnitFileState")
 
 
 def _systemctl(*args):
-    return subprocess.run(["systemctl", "--user", *args],
-                          capture_output=True, text=True, timeout=30)
+    # systemctl's output contains non-ASCII (e.g. the ● in `status`), so don't rely on the locale
+    return subprocess.run(["systemctl", "--user", *args], capture_output=True, text=True,
+                          encoding="utf-8", errors="replace", timeout=30)
 
 
 def status() -> dict:
@@ -58,12 +60,23 @@ def raw_status() -> str:
 
 
 def version() -> str:
-    """Return the version of Glyphy from the package manifest"""
-    try:
-        with open(os.path.join(APP_ROOT, "manifest.json")) as file:
-            return str(json.load(file).get("version", ""))
-    except (OSError, ValueError):
-        return ""
+    """Return Glyphy's version.
+    `click build` moves manifest.json out of the installed files, so after checking for it
+    (present when running from a source tree), check the copy click keeps in .click/info,
+    then fall back to the name of the version-numbered install directory."""
+    candidates = [os.path.join(APP_ROOT, "manifest.json")]
+    candidates += sorted(glob.glob(os.path.join(APP_ROOT, ".click", "info", "*.manifest")))
+    for path in candidates:
+        try:
+            with open(path) as file:
+                found = json.load(file).get("version")
+        except (OSError, ValueError):
+            continue
+        if found:
+            return str(found)
+    if os.path.isdir(os.path.join(os.path.dirname(APP_ROOT), "current")):
+        return os.path.basename(APP_ROOT)
+    return ""
 
 
 def run(action: str) -> dict:
