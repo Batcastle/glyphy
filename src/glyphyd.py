@@ -56,7 +56,7 @@ def _shutdown(_signum, _frame):
 signal.signal(signal.SIGTERM, _shutdown)
 screen = tools.ScreenBrightnessFollower()
 notifications = tools.NotificationWatcher()
-file_watcher = tools.FileWatcher()
+file_watcher = tools.FileWatcher(os.path.dirname(os.path.abspath(__file__)))
 loop_delay = 1 / GENERAL_SETTINGS["general"]["loop_frequency"]
 file_watcher_delay = 1 / GENERAL_SETTINGS["general"]["file_check_frequency"]
 last_file_check = time.time()
