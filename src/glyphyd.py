@@ -36,6 +36,7 @@ CONFIG = settings.Settings()
 CONFIG.search()
 CONFIG.load()
 GENERAL_SETTINGS = CONFIG.get("general.json")
+ANI_SETTINGS = CONFIG.get("animations.json")["animations"]
 glyphs = led.Glyph(GENERAL_SETTINGS)
 # This was here for stopping the glyph-lights service, which we are working on replacing.
 # subprocess.check_call(["systemctl", "--user", "stop", "glyphs"])
@@ -65,36 +66,39 @@ ids = {
 while True:
     glyphs.check_status()
 
-    if notifications.new_notification():
-        glyphs.play_animation(CONFIG, reason="notification")
-    if tools.has_notifications():
-        if ids["unread_id"] is None:
-            ids["unread_id"] = glyphs.play_animation(CONFIG, reason="unread")
-    elif ids["unread_id"] is not None:
-        glyphs.stop_software_animation(ids["unread_id"])
-        ids["unread_id"] = None
+    if ANI_SETTINGS["notification"]["enabled"]:
+        if notifications.new_notification():
+            glyphs.play_animation(CONFIG, reason="notification")
+        if tools.has_notifications():
+            if ids["unread_id"] is None:
+                ids["unread_id"] = glyphs.play_animation(CONFIG, reason="unread")
+        elif ids["unread_id"] is not None:
+            glyphs.stop_software_animation(ids["unread_id"])
+            ids["unread_id"] = None
 
-    if tools.is_wireless_charging():
-        if ids["wireless_charging_id"] is None:
-            ids["wireless_charging_id"] = glyphs.play_animation(CONFIG, reason="wireless_charging")
-    elif ids["wireless_charging_id"] is not None:
-        glyphs.stop_software_animation(ids["wireless_charging_id"])
-        ids["wireless_charging_id"] = None
+    if ANI_SETTINGS["wireless_charging"]["enabled"]:
+        if tools.is_wireless_charging():
+            if ids["wireless_charging_id"] is None:
+                ids["wireless_charging_id"] = glyphs.play_animation(CONFIG, reason="wireless_charging")
+        elif ids["wireless_charging_id"] is not None:
+            glyphs.stop_software_animation(ids["wireless_charging_id"])
+            ids["wireless_charging_id"] = None
 
-    if tools.is_wireless_charging() or tools.is_charging(wired_only=True):
-        if ids["charging_id"] is None:
-            ids["charging_id"] = glyphs.play_animation(CONFIG, reason="charging")
-    elif ids["charging_id"] is not None:
-        glyphs.stop_software_animation(ids["charging_id"])
-        ids["charging_id"] = None
+    if ANI_SETTINGS["charging"]["enabled"]:
+        if tools.is_wireless_charging() or tools.is_charging(wired_only=True):
+            if ids["charging_id"] is None:
+                ids["charging_id"] = glyphs.play_animation(CONFIG, reason="charging")
+        elif ids["charging_id"] is not None:
+            glyphs.stop_software_animation(ids["charging_id"])
+            ids["charging_id"] = None
 
-
-    if tools.is_recording_video():
-        if ids["recording_id"] is None:
-            ids["recording_id"] = glyphs.play_animation(CONFIG, reason="recording")
-    elif ids["recording_id"] is not None:
-        glyphs.stop_software_animation(ids["recording_id"])
-        ids["recording_id"] = None
+    if ANI_SETTINGS["notification"]["enabled"]:
+        if tools.is_recording_video():
+            if ids["recording_id"] is None:
+                ids["recording_id"] = glyphs.play_animation(CONFIG, reason="recording")
+        elif ids["recording_id"] is not None:
+            glyphs.stop_software_animation(ids["recording_id"])
+            ids["recording_id"] = None
 
 
     if time.time() >= (last_file_check + file_watcher_delay):

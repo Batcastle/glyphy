@@ -1,11 +1,14 @@
 {
   "animations": {
     "notification": {
-      "pattern": "random_leds_effect",
-      "leds": [],
+      "pattern": "Blink",
+      "leds": [
+        "all"
+      ],
       "hardware": true,
-      "frequency": null,
-      "duration": 1000
+      "frequency": 3,
+      "duration": 1000,
+      "enabled": true
     },
     "unread": {
       "pattern": "Breath",
@@ -23,7 +26,8 @@
         "red_led"
       ],
       "frequency": 0.5,
-      "duration": -1
+      "duration": -1,
+      "enabled": true
     },
     "charging": {
       "pattern": "Fill",
@@ -32,7 +36,8 @@
         "bar"
       ],
       "frequency": 0.1,
-      "duration": -1
+      "duration": -1,
+      "enabled": true
     },
     "wireless_charging": {
       "pattern": "Breath",
@@ -41,7 +46,8 @@
         "G"
       ],
       "frequency": 0.2,
-      "duration": -1
+      "duration": -1,
+      "enabled": true
     }
   }
 }
