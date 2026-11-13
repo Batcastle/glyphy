@@ -123,10 +123,73 @@ def hooks() -> dict:
     return {"ok": True, "message": "", "hooks": items, "patterns": patterns, "leds": leds}
 
 
+def general() -> dict:
+    """Everything in general.json except the "leds" mapping, as a flat list of fields.
+    Each field has a path (e.g. ["general", "loop_frequency"]), a kind that tells the UI
+    which control to show, and its current value (defaults plus the user's changes)."""
+    try:
+        config = _load()
+        data = config.get("general.json")
+        leds = [name for name in data.get("leds", {}) if name != "single"]
+        fields = []
+
+        def add(path, value):
+            if isinstance(value, bool):
+                kind = "bool"
+            elif isinstance(value, int):
+                kind = "int"
+            elif isinstance(value, float):
+                kind = "float"
+            elif isinstance(value, str):
+                kind = "string"
+            elif isinstance(value, list) and value and all(item in leds for item in value):
+                kind = "leds"
+            elif isinstance(value, list):
+                kind = "list"
+            else:
+                return  # nested objects aren't editable here
+            fields.append({"path": path, "kind": kind, "value": value})
+
+        for section, content in data.items():
+            if section == "leds":
+                continue
+            if isinstance(content, dict):
+                for key, value in content.items():
+                    add([section, key], value)
+            else:
+                add([section], content)
+    except Exception as error:  # report anything to the UI instead of leaving it waiting
+        return {"ok": False, "message": f"Could not load settings: {error}", "fields": [], "leds": []}
+    return {"ok": True, "message": "", "fields": fields, "leds": leds}
+
+
+def reset(filename: str) -> dict:
+    """Restore the defaults for one settings file by removing the user's changes to it"""
+    try:
+        _load().clear_overrides(filename)
+    except Exception as error:  # report anything to the UI instead of leaving it waiting
+        return {"ok": False, "message": f"Could not restore defaults: {error}"}
+    return {"ok": True, "message": ""}
+
+
+def _match_types(changes, reference):
+    """QML hands every number to Python as a float, so 10 arrives as 10.0. Turn whole-number
+    floats back into ints wherever the existing setting is an int (e.g. brightness values,
+    which are written straight to sysfs)."""
+    if isinstance(changes, dict) and isinstance(reference, dict):
+        return {key: _match_types(value, reference.get(key)) for key, value in changes.items()}
+    if isinstance(changes, float) and changes.is_integer() \
+            and isinstance(reference, int) and not isinstance(reference, bool):
+        return int(changes)
+    return changes
+
+
 def save(changes: dict) -> dict:
     """Save partial settings, e.g. {"animations.json": {"animations": {"recording": {"enabled": False}}}}"""
     try:
-        _load().save_overrides(changes)
+        config = _load()
+        changes = {key: _match_types(value, config.settings.get(key)) for key, value in changes.items()}
+        config.save_overrides(changes)
     except Exception as error:  # report anything to the UI instead of leaving it waiting
         return {"ok": False, "message": f"Could not save settings: {error}"}
     return {"ok": True, "message": ""}

@@ -34,7 +34,6 @@ Item {
 
     // [{value, label, hardware, parameters: {name: {unit, min, max, default}}}]
     property var patterns: []
-    property var patternLabels: []
     // LED names from general.json, in config order
     property var ledNames: []
 
@@ -141,10 +140,6 @@ Item {
     function load() {
         app.callPython("settings_control.hooks", [], function(result) {
             patterns = result.patterns
-            var labels = []
-            for (var p = 0; p < result.patterns.length; p++)
-                labels.push(result.patterns[p].label)
-            patternLabels = labels
             ledNames = result.leds
 
             hookModel.clear()
@@ -210,23 +205,10 @@ Item {
                                   "savedDuration": row.duration})
             }
             countChanges()
-
-            if (!(app.installed && app.running)) {
+            app.restartForSettings(i18n.tr("Saved"), function(isError, text) {
                 saving = false
-                messageIsError = false
-                message = app.installed
-                        ? i18n.tr("Saved. Glyphy isn't running, so the changes will apply when it starts.")
-                        : i18n.tr("Saved. The changes will apply once the Glyphy service is installed and running.")
-                return
-            }
-            app.callPython("service_control.run", ["restart"], function(restart) {
-                saving = false
-                messageIsError = !restart.ok
-                message = restart.ok
-                        ? i18n.tr("Saved, and Glyphy restarted to apply the changes.")
-                        : i18n.tr("Saved, but restarting Glyphy failed: %1").arg(restart.message)
-                app.refresh()
-                app.refreshRawStatus()
+                messageIsError = isError
+                message = text
             })
         })
     }
@@ -331,7 +313,12 @@ Item {
                         OptionSelector {
                             width: parent.width
                             text: i18n.tr("Animation")
-                            model: settingsTab.patternLabels
+                            model: settingsTab.patterns
+                            delegate: OptionSelectorDelegate {
+                                text: modelData.label
+                                subText: modelData.hardware ? i18n.tr("Hardware effect")
+                                                            : i18n.tr("Software animation")
+                            }
                             selectedIndex: Math.max(0, settingsTab.patternIndex(hookItem.patternValue))
                             onDelegateClicked: {
                                 hookModel.setProperty(hookItem.row, "pattern", settingsTab.patterns[index].value)

@@ -98,6 +98,24 @@ MainView {
         python.call(name, args, callback)
     }
 
+    // After settings are written, restart the service if it's running so the daemon picks
+    // them up. `what` starts the message ("Saved", "Defaults restored"); done(isError, message)
+    function restartForSettings(what, done) {
+        if (!(installed && running)) {
+            done(false, installed
+                 ? i18n.tr("%1. Glyphy isn't running, so the changes will apply when it starts.").arg(what)
+                 : i18n.tr("%1. The changes will apply once the Glyphy service is installed and running.").arg(what))
+            return
+        }
+        python.call("service_control.run", ["restart"], function(restart) {
+            refresh()
+            refreshRawStatus()
+            done(!restart.ok, restart.ok
+                 ? i18n.tr("%1, and Glyphy restarted to apply the changes.").arg(what)
+                 : i18n.tr("%1, but restarting Glyphy failed: %2").arg(what).arg(restart.message))
+        })
+    }
+
     function confirmUninstall() {
         PopupUtils.open(uninstallDialog)
     }
@@ -176,7 +194,8 @@ MainView {
                     leftMargin: units.gu(2)
                     bottom: parent.bottom
                 }
-                model: [i18n.tr("Settings"), i18n.tr("Service")]
+                model: [i18n.tr("Settings"), i18n.tr("Advanced"),
+                        i18n.tr("Service"), i18n.tr("About")]
             }
         }
 
@@ -191,7 +210,7 @@ MainView {
             app: root
         }
 
-        ServiceTab {
+        AdvancedTab {
             anchors {
                 top: header.bottom
                 left: parent.left
@@ -199,6 +218,28 @@ MainView {
                 bottom: parent.bottom
             }
             visible: sections.selectedIndex === 1
+            app: root
+        }
+
+        ServiceTab {
+            anchors {
+                top: header.bottom
+                left: parent.left
+                right: parent.right
+                bottom: parent.bottom
+            }
+            visible: sections.selectedIndex === 2
+            app: root
+        }
+
+        AboutTab {
+            anchors {
+                top: header.bottom
+                left: parent.left
+                right: parent.right
+                bottom: parent.bottom
+            }
+            visible: sections.selectedIndex === 3
             app: root
         }
     }

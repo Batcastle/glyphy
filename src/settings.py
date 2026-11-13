@@ -107,6 +107,13 @@ class Settings:
                 output[key] = value
         return output
 
+    def clear_overrides(self, key: str):
+        """Remove the user's override file for one settings file, restoring its defaults"""
+        try:
+            os.remove(os.path.join(self.user_path, key))
+        except FileNotFoundError:
+            pass
+
     def save_overrides(self, changes: dict):
         """Merge partial settings into the user's override files.
         `changes` maps a settings file name to a partial copy of that file,
