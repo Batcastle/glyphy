@@ -275,7 +275,7 @@ class Glyph(Array):
                 self.led_objs[each].change_max_brightness(round(brightness * self.led_objs[each].absolute_max))
         tools.enforce_brightness(self.led_objs)
 
-    def play_software_animation(self, animation, leds="all", duration=4000) -> str:
+    def play_software_animation(self, animation, leds="all", duration=4000, frequency=-1) -> str:
         """calls start() on the passed animation object. Assumes all LEDs by default. Returns a unique animation ID."""
         ani_obj = animation()
         ani_leds = {}
@@ -294,7 +294,10 @@ class Glyph(Array):
         new_animation["animation_object"] = ani_obj
         new_id = tools.gen_id()
         self.playing_software_animations[new_id] = new_animation
-        self.playing_software_animations[new_id]["animation_object"].start()
+        if frequency == -1:
+            self.playing_software_animations[new_id]["animation_object"].start()
+        else:
+            self.playing_software_animations[new_id]["animation_object"].start(frequency=frequency)
         return new_id
 
     def stop_software_animation(self, animation_id: str):
@@ -324,7 +327,27 @@ class Glyph(Array):
         else:
             # Software-based animations
             to_play = self.software_animations[settings["pattern"]]
-            return self.play_software_animation(to_play, leds=settings["leds"], duration=settings["duration"])
+            try:
+                return self.play_software_animation(to_play, leds=settings["leds"], duration=settings["duration"], frequency=settings["frequency"])
+            except KeyError:
+                try:
+                    if "leds" not in settings:
+                        return self.play_software_animation(to_play, duration=settings["duration"], frequency=settings["frequency"])
+                    if "duration" not in settings:
+                        return self.play_software_animation(to_play, leds=settings["leds"], frequency=settings["frequency"])
+                    if "frequency" not in settings:
+                        return self.play_software_animation(to_play, leds=settings["leds"], duration=settings["duration"])
+                except KeyError:
+                    try:
+                        if "leds" in settings:
+                            return self.play_software_animation(to_play, leds=settings["leds"])
+                        if "duration" in settings:
+                            return self.play_software_animation(to_play, duration=settings["duration"])
+                        if "frequency" in settings:
+                            return self.play_software_animation(to_play, frequency=settings["frequency"])
+                    except KeyError:
+                        # We should never get down to here. But just in case...
+                        return self.play_software_animation(to_play)
 
 
 

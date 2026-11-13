@@ -1,25 +1,32 @@
 {
   "animations": {
     "notification": {
+      "name": "New Notifications",
+      "description": "Play a short animation on the Glyphs whenever you have a new notification come in (this does not include calls).",
       "pattern": "Blink",
       "leds": [
         "all"
       ],
-      "hardware": true,
+      "hardware": false,
       "frequency": 3,
       "duration": 1000,
       "enabled": true
     },
     "unread": {
+      "name": "Unread Notifications",
+      "description": "Play a short animation on the Glyphs whenever you have an unread notification.",
       "pattern": "Breath",
       "hardware": false,
       "leds": [
         "dot"
       ],
       "frequency": 0.1,
-      "duration": -1
+      "duration": -1,
+      "enabled": true
     },
     "recording": {
+      "name": "Recording Light",
+      "description": "Preserve privacy and transparency by allowing an animation on your Glyphs whenever you record a video.",
       "pattern": "Blink",
       "hardware": false,
       "leds": [
@@ -30,6 +37,8 @@
       "enabled": true
     },
     "charging": {
+      "name": "Charging",
+      "description": "This animation plays whenever your phone is charging. Using the 'Fill' animation will actually show how much battery you have.",
       "pattern": "Fill",
       "hardware": false,
       "leds": [
@@ -40,6 +49,8 @@
       "enabled": true
     },
     "wireless_charging": {
+      "name": "Wireless Charging",
+      "description": "Play an animation while wireless charging. (This and the basic 'charging' animation will both play while wireless charging if both are enabled.)",
       "pattern": "Breath",
       "hardware": false,
       "leds": [

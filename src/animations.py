@@ -99,10 +99,11 @@ def init() -> dict:
             self.last_change = -1
             self.delay = -1
 
-        def start(self, frequency=1000):
+        def start(self, frequency=1):
             """Start blinking at set frequency"""
             # Compute delay between blinks (Equivlent to converting to seconds then dividing by 2 for delay)
-            self.delay = frequency / 2000
+            self.delay = (1 / frequency) * 1000
+            self.delay = self.delay / 2
             super().start()
             self.last_change = time.time()
 
@@ -140,10 +141,11 @@ def init() -> dict:
                 scaler = self.time_remaining_in_step / self.step_time
             return round(scaler * max_brightness)
 
-        def start(self, frequency=4000):
+        def start(self, frequency=0.25):
             """Start animation"""
             self.started = True
-            self.delay = frequency / 2000
+            self.delay = (1 / frequency) * 1000
+            self.delay = self.delay / 2
             self.step_time = self.delay / 2
             self.time_remaining_in_step = self.delay / 2
             self.last_change = time.time()

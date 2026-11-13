@@ -69,6 +69,8 @@ while True:
     if ANI_SETTINGS["notification"]["enabled"]:
         if notifications.new_notification():
             glyphs.play_animation(CONFIG, reason="notification")
+
+    if ANI_SETTINGS["unread"]["enabled"]:
         if tools.has_notifications():
             if ids["unread_id"] is None:
                 ids["unread_id"] = glyphs.play_animation(CONFIG, reason="unread")
@@ -92,7 +94,7 @@ while True:
             glyphs.stop_software_animation(ids["charging_id"])
             ids["charging_id"] = None
 
-    if ANI_SETTINGS["notification"]["enabled"]:
+    if ANI_SETTINGS["recording"]["enabled"]:
         if tools.is_recording_video():
             if ids["recording_id"] is None:
                 ids["recording_id"] = glyphs.play_animation(CONFIG, reason="recording")
