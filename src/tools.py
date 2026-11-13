@@ -100,7 +100,10 @@ def has_notifications() -> bool:
     for name, (_enabled, _param_type, state) in result.unpack()[0].items():
         if ".msg." in name:
             return True
-        if ".src." in name and state and state[0][0] > 0:  # state is (count, time, string, attention)
+        # Sources are per-app counters (e.g. unread texts) that stay registered after their
+        # drawer entries are gone, so only count ones still asking for attention.
+        # state is (count, time, string, draws_attention)
+        if ".src." in name and state and state[0][0] > 0 and state[0][3]:
             return True
     return False
 
